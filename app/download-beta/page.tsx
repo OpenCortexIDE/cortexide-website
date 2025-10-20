@@ -37,9 +37,8 @@ async function getLatestReleaseVersion(): Promise<string> {
     }
 
     try {
-        const response = await fetch('https://api.github.com/repos/voideditor/binaries/releases/latest', {
-            // Avoid Next.js caching here—we handle our own
-            cache: 'no-store',
+        const response = await fetch('https://api.github.com/repos/cortexide/binaries/releases/latest', {
+            next: { revalidate: TTL / 1000 },
         });
 
         if (response.ok) {
@@ -116,15 +115,15 @@ const DownloadButton = ({ url, children, className }: { url: string; children: R
 function DownloadBetaClient({ releaseVersion }: { releaseVersion: string }) {
     const downloadLinks = {
         windows: {
-            x64: `https://github.com/voideditor/binaries/releases/download/${releaseVersion}/VoidSetup-x64-${releaseVersion}.exe`,
-            arm: `https://github.com/voideditor/binaries/releases/download/${releaseVersion}/VoidSetup-arm64-${releaseVersion}.exe`,
+            x64: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/VoidSetup-x64-${releaseVersion}.exe`,
+            arm: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/VoidSetup-arm64-${releaseVersion}.exe`,
         },
         mac: {
-            intel: `https://github.com/voideditor/binaries/releases/download/${releaseVersion}/Void.x64.${releaseVersion}.dmg`,
-            appleSilicon: `https://github.com/voideditor/binaries/releases/download/${releaseVersion}/Void.arm64.${releaseVersion}.dmg`,
+            intel: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/Void.x64.${releaseVersion}.dmg`,
+            appleSilicon: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/Void.arm64.${releaseVersion}.dmg`,
         },
         linux: {
-            x64: `https://github.com/voideditor/binaries/releases/download/${releaseVersion}/Void-${releaseVersion}.glibc2.29-x86_64.AppImage`,
+            x64: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/Void-${releaseVersion}.glibc2.29-x86_64.AppImage`,
         },
     };
 
@@ -134,11 +133,11 @@ function DownloadBetaClient({ releaseVersion }: { releaseVersion: string }) {
                 {/* left */}
                 <div className='text-balance max-sm:text-base text-xl max-w-[600px] space-y-5'>
                     <h2 className='mx-auto text-center text-3xl lg:text-4xl tracking-tight font-black'>
-                        <div className='flex justify-center items-center '>Download Void.</div>
+                        <div className='flex justify-center items-center '>Download CortexIDE.</div>
                     </h2>
 
                     <div className='mx-auto pb-4 text-center px-4 text-balance max-w-[400px]'>
-                        Try the beta edition of Void, or check out the source on {' '}
+                        Try the beta edition of CortexIDE, or check out the source on {' '}
                         <a href={githubLink} target='_blank' rel='noreferrer noopener nofollow' className='underline'>
                             GitHub
                         </a>
@@ -196,14 +195,14 @@ function DownloadBetaClient({ releaseVersion }: { releaseVersion: string }) {
             {/* desc */}
             <div className='mx-auto text-center px-4 text-balance opacity-25 pt-60 pb-40'>
                 <div className='my-1'>
-                    For Linux users, download Void{' '}
+                    For Linux users, download CortexIDE{' '}
                     <a href={binariesLink} target='_blank' rel='noreferrer noopener nofollow' className='underline'>
                         here
                     </a>
                     .
                 </div>
                 <div className='my-1'>
-                    Alternatively, download Void from the source on{' '}
+                    Alternatively, download CortexIDE from the source on{' '}
                     <a href={releaseLink} target='_blank' rel='noreferrer noopener nofollow' className='underline'>
                         GitHub
                     </a>

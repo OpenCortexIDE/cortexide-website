@@ -1,19 +1,19 @@
 export const discordLink = 'https://discord.gg/RSNjgaugJs'
-export const xLink = 'https://x.com/thevoideditor'
+export const xLink = 'https://x.com/cortexide'
 
-// export const contributeLink = 'https://github.com/voideditor/void/blob/main/HOW_TO_CONTRIBUTE.md'
-export const githubLink = 'https://github.com/voideditor/void#readme'
-export const githubStarLink = 'https://github.com/voideditor/void'
+// export const contributeLink = 'https://github.com/cortexide/cortexide/blob/main/HOW_TO_CONTRIBUTE.md'
+export const githubLink = 'https://github.com/cortexide/cortexide#readme'
+export const githubStarLink = 'https://github.com/cortexide/cortexide'
 
-export const support_email = 'hello@voideditor.com'
+export const support_email = 'hello@cortexide.com'
 export const emailLink = `mailto:${support_email}`
 
 export const waitlistLink = '/email'
 export const changelogLink = '/changelog'
 export const downloadLink = '/download-beta'
 
-export const releaseLink = `https://github.com/voideditor/void/releases`
-export const binariesLink = `https://github.com/voideditor/binaries/releases`
+export const releaseLink = `https://github.com/cortexide/cortexide/releases`
+export const binariesLink = `https://github.com/cortexide/binaries/releases`
 
 // const downloadPrefix = `https://github.com/voideditor/void/releases/latest/download`
 // export const downloadOfOS = {
