@@ -1,9 +1,9 @@
 export const discordLink = 'https://discord.gg/RSNjgaugJs'
 export const xLink = 'https://x.com/cortexide'
 
-// export const contributeLink = 'https://github.com/cortexide/cortexide/blob/main/HOW_TO_CONTRIBUTE.md'
-export const githubLink = 'https://github.com/cortexide/cortexide#readme'
-export const githubStarLink = 'https://github.com/cortexide/cortexide'
+// export const contributeLink = 'https://github.com/OpenCortexIDE/cortexide/blob/main/HOW_TO_CONTRIBUTE.md'
+export const githubLink = 'https://github.com/OpenCortexIDE/cortexide#readme'
+export const githubStarLink = 'https://github.com/OpenCortexIDE/cortexide'
 
 export const support_email = 'hello@cortexide.com'
 export const emailLink = `mailto:${support_email}`
@@ -12,8 +12,8 @@ export const waitlistLink = '/email'
 export const changelogLink = '/changelog'
 export const downloadLink = '/download-beta'
 
-export const releaseLink = `https://github.com/cortexide/cortexide/releases`
-export const binariesLink = `https://github.com/cortexide/binaries/releases`
+export const releaseLink = `https://github.com/OpenCortexIDE/cortexide/releases`
+export const binariesLink = `https://github.com/OpenCortexIDE/binaries/releases`
 
 // const downloadPrefix = `https://github.com/voideditor/void/releases/latest/download`
 // export const downloadOfOS = {

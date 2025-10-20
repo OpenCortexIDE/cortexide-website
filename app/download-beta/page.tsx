@@ -37,7 +37,7 @@ async function getLatestReleaseVersion(): Promise<string> {
     }
 
     try {
-        const response = await fetch('https://api.github.com/repos/cortexide/binaries/releases/latest', {
+        const response = await fetch('https://api.github.com/repos/OpenCortexIDE/binaries/releases/latest', {
             next: { revalidate: TTL / 1000 },
         });
 
@@ -115,15 +115,15 @@ const DownloadButton = ({ url, children, className }: { url: string; children: R
 function DownloadBetaClient({ releaseVersion }: { releaseVersion: string }) {
     const downloadLinks = {
         windows: {
-            x64: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/VoidSetup-x64-${releaseVersion}.exe`,
-            arm: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/VoidSetup-arm64-${releaseVersion}.exe`,
+            x64: `https://github.com/OpenCortexIDE/binaries/releases/download/${releaseVersion}/VoidSetup-x64-${releaseVersion}.exe`,
+            arm: `https://github.com/OpenCortexIDE/binaries/releases/download/${releaseVersion}/VoidSetup-arm64-${releaseVersion}.exe`,
         },
         mac: {
-            intel: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/Void.x64.${releaseVersion}.dmg`,
-            appleSilicon: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/Void.arm64.${releaseVersion}.dmg`,
+            intel: `https://github.com/OpenCortexIDE/binaries/releases/download/${releaseVersion}/Void.x64.${releaseVersion}.dmg`,
+            appleSilicon: `https://github.com/OpenCortexIDE/binaries/releases/download/${releaseVersion}/Void.arm64.${releaseVersion}.dmg`,
         },
         linux: {
-            x64: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/Void-${releaseVersion}.glibc2.29-x86_64.AppImage`,
+            x64: `https://github.com/OpenCortexIDE/binaries/releases/download/${releaseVersion}/Void-${releaseVersion}.glibc2.29-x86_64.AppImage`,
         },
     };
 
