@@ -23,9 +23,6 @@ import { CSPostHogProvider } from '../components/providers'
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
 
-    const bg1 = 'rgba(255, 255, 255, 1)';
-    const bg2 = 'rgba(228, 229, 231, 0.85)';
-
     return (<>
 
         <html lang="en">
@@ -37,11 +34,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
             </head>
 
-            {/* <body className='text-black bg-gray-100 ' style={{ background: `url('/noise.png')` }}> */}
             <CSPostHogProvider>
-                <body className='text-black bg-gray-100' style={{ background: `linear-gradient(90deg, ${bg2} 0%, ${bg1} 25%, ${bg1} 75%, ${bg2} 100%)` }}>
+                <body className='text-white bg-black' style={{ background: '#000000' }}>
                     <div className='overflow-hidden rounded-sm'>
-                        {/* in dark mode, text-black is not the default */}
                         <GlassProvider>
                             <Header />
                             {children}

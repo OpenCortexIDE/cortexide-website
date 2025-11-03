@@ -13,21 +13,21 @@ export const Header = () => {
         <div className='relative max-w-[1400px] mx-auto px-4 lg:px-12 '>
 
             {/* header */}
-            <div className='h-12 py-2 px-4 max-w-[1400px] mx-auto flex items-center justify-start bg-gray-50 backdrop-blur-md shadow-md rounded-lg overflow-hidden gap-3'>
+            <div className='h-12 py-2 px-4 max-w-[1400px] mx-auto flex items-center justify-start bg-gray-900 backdrop-blur-md shadow-md rounded-lg overflow-hidden gap-3 border border-gray-800'>
 
                 <Link draggable={false} href='/' className='group pr-2'>
                     <h2 className="flex items-center gap-2 font-extrabold">
-                        <img className='group-hover:brightness-[2] duration-200' src={`${process.env.NEXT_PUBLIC_LOGO_URL!}`} alt='CortexIDE Logo' height={32} width={32} />
-                        <div className="text-transparent tracking-tighter bg-clip-text bg-gradient-to-tl from-black to-gray-500 text-3xl whitespace-nowrap group-hover:brightness-150 duration-200">
+                        <img className='group-hover:brightness-[2] duration-200 bg-transparent' src='/cortexide-main.png' alt='CortexIDE Logo' height={32} width={32} />
+                        <div className="text-transparent tracking-tighter bg-clip-text bg-gradient-to-tl from-white to-gray-400 text-3xl whitespace-nowrap group-hover:brightness-150 duration-200">
                             CortexIDE
                         </div>
                     </h2>
                 </Link>
 
 
-                <Link draggable={false} href={downloadLink} className='group py-1 px-2 rounded-md overflow-hidden hover:bg-gray-100 duration-100 max-[380px]:hidden'>
+                <Link draggable={false} href={downloadLink} className='group py-1 px-2 rounded-md overflow-hidden hover:bg-gray-800 duration-100 max-[380px]:hidden'>
                     <div className='flex items-center justify-center duration-200 gap-1'>
-                        <span className='text-lg whitespace-nowrap text-black '>
+                        <span className='text-lg whitespace-nowrap text-white '>
                             Download
                         </span>
                     </div>
@@ -43,9 +43,9 @@ export const Header = () => {
 
 
 
-                <Link draggable={false} href={githubLink} className='group py-1 px-2 rounded-md overflow-hidden hover:bg-gray-100 duration-100 max-sm:hidden'>
+                <Link draggable={false} href={githubLink} className='group py-1 px-2 rounded-md overflow-hidden hover:bg-gray-800 duration-100 max-sm:hidden'>
                     <div className='flex items-center justify-center duration-200 gap-1'>
-                        <span className='text-lg whitespace-nowrap text-black '>
+                        <span className='text-lg whitespace-nowrap text-white '>
                             Contribute
                         </span>
                     </div>
@@ -53,16 +53,16 @@ export const Header = () => {
 
                 <div className='ml-auto' />
 
-                <a draggable={false} href={discordLink} target='_blank' rel="noreferrer noopener nofollow" className='group py-1 px-2 rounded-md overflow-hidden hover:bg-gray-100 duration-100 max-sm:hidden'>
+                <a draggable={false} href={discordLink} target='_blank' rel="noreferrer noopener nofollow" className='group py-1 px-2 rounded-md overflow-hidden hover:bg-gray-800 duration-100 max-sm:hidden'>
                     <div className='flex items-center justify-center duration-200 gap-1'>
-                        <span className='text-lg whitespace-nowrap text-black '>
+                        <span className='text-lg whitespace-nowrap text-white '>
                             Discord
                         </span>
                     </div>
                 </a>
-                <a draggable={false} href={githubLink} target='_blank' rel="noreferrer noopener nofollow" className='group py-1 px-2 rounded-md overflow-hidden hover:bg-gray-100 duration-100 '>
+                <a draggable={false} href={githubLink} target='_blank' rel="noreferrer noopener nofollow" className='group py-1 px-2 rounded-md overflow-hidden hover:bg-gray-800 duration-100 '>
                     <div className='flex items-center justify-center duration-200 gap-1'>
-                        <span className='text-lg whitespace-nowrap text-black '>
+                        <span className='text-lg whitespace-nowrap text-white '>
                             GitHub
                         </span>
                     </div>

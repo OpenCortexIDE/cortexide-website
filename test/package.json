@@ -1,0 +1,14 @@
+{
+  "name": "cortexide-website-tests",
+  "version": "1.0.0",
+  "description": "Website integrity tests for CortexIDE",
+  "main": "website-integrity-checker.js",
+  "type": "module",
+  "scripts": {
+    "test": "node website-integrity-checker.js",
+    "test:bash": "../scripts/check-website-integrity.sh"
+  },
+  "keywords": ["cortexide", "website", "testing", "integrity"],
+  "author": "Glass Devtools, Inc.",
+  "license": "Apache-2.0"
+}

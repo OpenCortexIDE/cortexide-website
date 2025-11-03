@@ -12,7 +12,7 @@ export function GET(request: Request) {
   return new ImageResponse(
     (
       <div tw="flex flex-row w-full h-full items-center justify-start px-[120px] bg-white">
-        <img tw=' h-[300px] w-[300px] mr-[80px]' src={`${baseUrl}${process.env.NEXT_PUBLIC_LOGO_URL!}`} />
+        <img tw=' h-[300px] w-[300px] mr-[80px]' src={`${baseUrl}/cortexide-main.png`} />
 
         <div tw="flex flex-col w-[620px]">
           <h2 tw="text-8xl font-bold tracking-tight text-left ">{title}</h2>

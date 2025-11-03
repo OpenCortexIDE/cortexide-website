@@ -96,9 +96,9 @@ const GridElement = ({ name, src = undefined, alt = undefined, children, imageCl
     return <>
         <div className="py-4">
             <div>
-                {name ? <div className='text-center text-xl font-semibold pb-4'>{name}</div> : null}
+                {name ? <div className='text-center text-xl font-semibold pb-4 text-white'>{name}</div> : null}
 
-                <div className={`flex items-center justify-center rounded-lg ${noBg ? '' : 'bg-[#252526]'}`}>
+                <div className={`flex items-center justify-center rounded-lg ${noBg ? '' : 'bg-gray-800'}`}>
                     {childContents}
                 </div>
             </div>
@@ -111,7 +111,7 @@ const Fold = () => {
 
     return <section className=' '>
 
-        <div className='  relative w-full border shadow-xl px-5 min-h-[800px] flex justify-center gap-12 rounded-xl overflow-hidden'>
+        <div className='  relative w-full border border-gray-800 shadow-xl px-5 min-h-[800px] flex justify-center gap-12 rounded-xl overflow-hidden bg-black'>
 
             {/* This image is being preloaded in head */}
             {/* <div className="absolute inset-0 z-0 w-full h-full scale-[1] transform opacity-[0%] [mask-image:linear-gradient(#ffff, transparent, 75%)] pointer-events-none select-none bg-[length:100%]" style={{ mixBlendMode: "overlay", backgroundImage: `url(${process.env.NEXT_PUBLIC_BG_NOISE_IMG!})` }} /> */}
@@ -120,16 +120,12 @@ const Fold = () => {
 
                 <h1 className='text-center font-extrabold tracking-tighter leading-tight transition duration-200 mt-[12vh]'>
 
-                    <img className='isolate -mb-4 max-lg:-top-20 inset-0 pt-3 mx-auto max-sm:scale-75' src='/void/slice_of_void.png' alt={`A slice of the void`} height={250} width={250} />
+                    <img className='isolate -mb-4 max-lg:-top-20 inset-0 pt-3 mx-auto max-sm:scale-75 bg-transparent' src='/cortexide-main.png' alt={`CortexIDE Logo`} height={250} width={250} />
 
-                    <span className='text-black drop-shadow-xl text-3xl md:text-7xl font-bold tracking-tighter'>
+                    <span className='text-white drop-shadow-xl text-3xl md:text-7xl font-bold tracking-tighter'>
                         {`The open source`}
                         <br />
                         {`AI code editor.`}
-                        {/* {`The open source `}
-                        <br />
-                        {`AI Code Editor.`} */}
-                        {/* {`The open source AI code editor. `} */}
                     </span>
                 </h1>
 
@@ -139,12 +135,8 @@ const Fold = () => {
                     {/* <div className='text-balance max-sm:text-base text-2xl font-bold tracking-tight leading-tight text-black drop-shadow-xl'>
                         {`Use AI autocomplete, inline edits, codebase chat, agentic features, and more, in a privacy-first AI IDE.`}
                     </div> */}
-                    <div className='text-balance max-sm:text-base text-xl font-semibold tracking-tight leading-tight text-black drop-shadow-xl mb-2'>
-                        {/* {`Void is an open source Cursor alternative. Write code with your favorite AI tools, with options for hosting on-prem.`} */}
-                        {/* {`Void is an open source Cursor alternative. Develop in a fully-featured IDE, and host your LLM anywhere.`} */}
-                        {/* {`Void is an open source Cursor alternative. We let you use the best AI tools, while having full control over privacy.`} */}
-                        {/* {`Void is an open source Cursor alternative. Write code with the best AI tools, while having full control over your data.`} */}
-                        {`Void is an open source Cursor alternative. Write code with the best AI tools, use any model, and retain full control over your data.`}
+                    <div className='text-balance max-sm:text-base text-xl font-semibold tracking-tight leading-tight text-white drop-shadow-xl mb-2'>
+                        {`CortexIDE is a fork of Void - an open source Cursor alternative. Write code with the best AI tools, use any model, and retain full control over your data.`}
                     </div>
                     {/* {`Void is an open source Cursor alternative. Build your project with AI auto-complete, inline edits, and codebase chat, with full control over .`} */}
                     {/* {`We offer autocomplete, inline edits, embedded chat, agentic features, and more, without compromising privacy.`} */}
@@ -159,19 +151,13 @@ const Fold = () => {
                 </div>
 
 
-                {/* Backed by YC */}
+                {/* Not backed by YC */}
                 <div className=' flex flex-col items-center w-full my-14 flex-nowrap text-nowrap'>
                     <div className='inline-flex items-center relative px-5 rounded-full '>
-                        <span className="relative inline-flex items-center text-gray-500 font-semibold">
-                            Backed by
-                            <img src="/yc.svg" className="h-5 w-auto ml-2" alt="Y Combinator Logo" />
+                        <span className="relative inline-flex items-center text-gray-400 font-semibold">
+                            Not backed by anyone, just vibing 😊
                         </span>
                     </div>
-
-                    {/* <a href='https://www.ycombinator.com/launches/Lrh-void-the-open-source-cursor-alternative' target='_blank'>
-                        <img alt='Launch YC: Void: The open source Cursor alternative' src='https://www.ycombinator.com/launches/Lrh-void-the-open-source-cursor-alternative/upvote_embed.svg' />
-                    </a> */}
-
                 </div>
             </div>
 
@@ -188,7 +174,7 @@ const Fold = () => {
 const Wave = ({ isExitWave = false }: { isExitWave?: boolean }) => {
     return <div className={`overflow-hidden ${isExitWave ? '' : ''}`}>
         <svg preserveAspectRatio="none" viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg"
-            className={`h-5 w-full ${isExitWave ? '' : 'rotate-180'} scale-x-150 translate-x-[0] fill-slate-200`}>
+            className={`h-5 w-full ${isExitWave ? '' : 'rotate-180'} scale-x-150 translate-x-[0] fill-black`}>
             <path d="M321.39 56.44c58-10.79 114.16-30.13 172-41.86 82.39-16.72 168.19-17.73 250.45-.39C823.78 31 906.67 72 985.66 92.83c70.05 18.48 146.53 26.09 214.34 3V0H0v27.35a600.21 600.21 0 00321.39 29.09z"></path>
         </svg>
     </div>
@@ -206,7 +192,7 @@ const CoreFeatures = () => {
     //     border-r-8 border-r-black/30
     // `
 
-    return <section className='py-16 lg:py-32 px-8 lg:px-16 gap-16 my-32 bg-gray-100 flex flex-col items-center justify-center rounded-xl text-black shadow-xl'>
+    return <section className='py-16 lg:py-32 px-8 lg:px-16 gap-16 my-32 bg-gray-900 flex flex-col items-center justify-center rounded-xl text-white shadow-xl'>
 
 
         <h2 className='mx-auto text-center text-3xl lg:text-4xl tracking-tight font-black'>
@@ -238,12 +224,12 @@ const ALotMoreFeatures = () => {
                 {/* {"Features."} */}
                 {"Any LLM, Anywhere."}
             </h2>
-            <div className='mx-auto text-center text-balance max-sm:text-base text-xl max-w-2xl my-8'>
-                {`Void doesn't send your messages through a private backend like Cursor or Windsurf. Cut out the middleman and connect directly.`}
+            <div className='mx-auto text-center text-balance max-sm:text-base text-xl max-w-2xl my-8 text-white'>
+                {`CortexIDE doesn't send your messages through a private backend like Cursor or Windsurf. Cut out the middleman and connect directly.`}
             </div>
             <div className='grid grid-cols-1 lg:grid-cols-2 justify-items-center gap-x-8 lg:gap-x-16 gap-y-6'>
                 {/* Box 1 */}
-                <div className='rounded-md gap-8 w-full flex flex-col justify-start bg-slate-100 p-8 space-y-6'>
+                <div className='rounded-md gap-8 w-full flex flex-col justify-start bg-gray-800 p-8 space-y-6'>
                     <div className='text-center text-3xl font-black'>
                         Private LLMs
                     </div>
@@ -262,13 +248,13 @@ const ALotMoreFeatures = () => {
                         {/* <ProviderLogo size={'sm'} className='brightness-50 p-3' src="/ms.png" alt="microsoft phi" name="Microsoft Phi 4" /> */}
                     </div>
 
-                    <div className='text-balance mx-auto text-center max-w-[80%] text-gray-500'>
-                        {`Never run out of API credits again. Host any open source model with Void: DeepSeek, Llama, Gemini, Qwen, and more.`}
+                    <div className='text-balance mx-auto text-center max-w-[80%] text-gray-300'>
+                        {`Never run out of API credits again. Host any open source model with CortexIDE: DeepSeek, Llama, Gemini, Qwen, and more.`}
                     </div>
                 </div>
 
                 {/* Box 2 */}
-                <div className='rounded-md gap-8 w-full flex flex-col justify-start bg-slate-100 p-8 max-sm:px-2 space-y-6'>
+                <div className='rounded-md gap-8 w-full flex flex-col justify-start bg-gray-800 p-8 max-sm:px-2 space-y-6'>
                     <div className='text-center text-3xl font-black'>
                         Frontier LLMs
                     </div>
@@ -281,7 +267,7 @@ const ALotMoreFeatures = () => {
                         {/* <ProviderLogo size={'lg'} className='brightness-[30%] p-1' src="/openrouter.png" alt="OpenRouter Logo" name="OpenRouter" /> */}
                     </div>
 
-                    <div className='text-balance mx-auto text-center text-gray-500 max-w-[80%]'>
+                    <div className='text-balance mx-auto text-center text-gray-300 max-w-[80%]'>
                         {`Directly connect to any provider. Use models like Gemini 2.5, Claude 3.7, Grok 3, o4-mini, and Qwen 3. `}
                     </div>
                 </div>
@@ -296,7 +282,7 @@ const ALotMoreFeatures = () => {
                 {/* {"Features."} */}
                 {"The Latest Features."}
             </h2>
-            <div className='mx-auto text-center max-sm:text-base text-lg max-w-2xl my-8'>
+            <div className='mx-auto text-center max-sm:text-base text-lg max-w-2xl my-8 text-white'>
                 {/* {`We're experimenting with  `}
                 {` advanced `}
                 {` AI features. `} */}
@@ -349,7 +335,7 @@ const ALotMoreFeatures = () => {
                     <div className='text-center text-3xl font-black mb-6'>
                         Agent Mode
                     </div>
-                    <div className='text-balance mx-auto text-center text-gray-600'>
+                    <div className='text-balance mx-auto text-center text-gray-300'>
                         {`Agent mode can search, create, edit, and delete files & folders. It also has terminal access and MCP tool access.`}
                     </div>
 
@@ -364,7 +350,7 @@ const ALotMoreFeatures = () => {
                         Gather Mode
                     </div>
 
-                    <div className='text-balance mx-auto text-center text-gray-600'>
+                    <div className='text-balance mx-auto text-center text-gray-300'>
                         {`Gather mode is a restricted version of Agent mode that can only read and search, but not modify or edit.`}
                     </div>
                     <div className="w-full flex items-center justify-center">
@@ -379,7 +365,7 @@ const ALotMoreFeatures = () => {
 
 const PoweredByVscode = () => {
     return <section className='w-full h-fit py-16 mt-32 mb-40 
-    flex flex-col items-center justify-center gap-8 rounded-xl text-black shadow-xl bg-gray-100
+    flex flex-col items-center justify-center gap-8 rounded-xl text-white shadow-xl bg-gray-900
     '>
 
         <h2 className='mx-auto text-center text-3xl lg:text-4xl tracking-tight font-black'>
@@ -390,19 +376,19 @@ const PoweredByVscode = () => {
 
         <div className='mx-auto text-center text-balance max-sm:text-base text-xl max-w-[600px]'>
             <div className='text-center px-4 text-balance'>
-                {`Void is a fork of VS Code. We let you transfer over all your themes, keybinds, and settings in one click. `}
+                {`CortexIDE is a fork of Void (which is a fork of VS Code). We let you transfer over all your themes, keybinds, and settings in one click. `}
             </div>
         </div>
         <div className='flex items-center gap-8'>
-            <VscVscode className='size-20 fill-black/80' />
-            <FaArrowsLeftRight className='size-6' />
-            <Image className='ml-2' src={process.env.NEXT_PUBLIC_LOGO_URL!} alt={`A slice of the void`} height={70} width={70} />
+            <VscVscode className='size-20 fill-white/80' />
+            <FaArrowsLeftRight className='size-6 text-white' />
+            <Image className='ml-2 bg-transparent' src='/cortexide-main.png' alt={`CortexIDE Logo`} height={70} width={70} />
         </div>
 
     </section>
 }
 const InterestedInContributing = () => {
-    return <section className='w-full h-fit py-16 mt-32 mb-20 flex flex-col items-center justify-center gap-8 rounded-xl text-black shadow-xl bg-gray-100'>
+    return <section className='w-full h-fit py-16 mt-32 mb-20 flex flex-col items-center justify-center gap-8 rounded-xl text-white shadow-xl bg-gray-900'>
 
         <h2 className='mx-auto text-center text-3xl lg:text-4xl tracking-tight font-black'>
             <div className='flex justify-center items-center '>
@@ -417,7 +403,7 @@ const InterestedInContributing = () => {
         </div>
         <div className='flex items-center justify-center gap-8'>
             <a href={discordLink}>
-                <FaDiscord className='size-20 fill-black/80' />
+                <FaDiscord className='size-20 fill-white/80' />
             </a>
         </div>
 
@@ -439,7 +425,7 @@ const GetStartedWithVoid = () => {
 
                 <h1 className='  text-center font-extrabold tracking-tighter leading-tight hover:brightness-110 transition duration-200'>
                     <span className='text-white drop-shadow-xl text-3xl font-bold tracking-tighter'>
-                        Get Started with Void.
+                        Get Started with CortexIDE.
                     </span>
                 </h1>
 
@@ -470,7 +456,7 @@ export default function LandingPage() {
         </div>
 
         <Wave />
-        <div className='bg-slate-200'>
+        <div className='bg-black'>
             <div className='relative max-w-[1400px] mx-auto px-4 lg:px-12'>
                 <ALotMoreFeatures />
             </div>
