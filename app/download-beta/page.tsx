@@ -6,7 +6,6 @@ import { FaApple, FaWindows } from 'react-icons/fa';
 import './twinkle.css'
 import Image from 'next/image';
 import SparkleOverlay from './SparkleOverlay';
-import CollapsibleNotice from './CollapsibleNotice';
 
 
 
@@ -75,11 +74,12 @@ const FloatingElement = () => (
     <div className='relative flex flex-col items-center'>
         <div className='animate-float'>
             <Image
-                width={23 * 4 * 1.5}
-                height={24 * 4 * 1.5}
+                width={138}
+                height={138}
                 draggable={false}
-                src='/void/logo_cube_noshadow.png'
-                alt='Slice of the Void logo'
+                src='/cortexide-main.png'
+                alt='CortexIDE Logo'
+                className='rounded-full'
             />
         </div>
         <svg
@@ -179,9 +179,6 @@ function DownloadBetaClient({ releaseVersion }: { releaseVersion: string }) {
                             </DownloadButton>
                         </div>
 
-                        <div>
-                            <CollapsibleNotice />
-                        </div>
                     </div>
 
                 </div>

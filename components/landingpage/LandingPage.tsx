@@ -382,7 +382,7 @@ const PoweredByVscode = () => {
         <div className='flex items-center gap-8'>
             <VscVscode className='size-20 fill-white/80' />
             <FaArrowsLeftRight className='size-6 text-white' />
-            <Image className='ml-2 bg-transparent' src='/cortexide-main.png' alt={`CortexIDE Logo`} height={70} width={70} />
+            <Image className='ml-2 bg-transparent rounded-full' src='/cortexide-main.png' alt={`CortexIDE Logo`} height={70} width={70} />
         </div>
 
     </section>
