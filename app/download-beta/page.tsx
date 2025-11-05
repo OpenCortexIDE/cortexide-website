@@ -49,7 +49,7 @@ async function getLatestRelease(): Promise<{ version: string; links: DownloadLin
     }
 
     try {
-        const response = await fetch('https://api.github.com/repos/OpenCortexIDE/binaries/releases/latest', {
+        const response = await fetch('https://api.github.com/repos/cortexide/binaries/releases/latest', {
             next: { revalidate: TTL / 1000 },
         });
 
@@ -69,17 +69,50 @@ async function getLatestRelease(): Promise<{ version: string; links: DownloadLin
                 return found?.browser_download_url;
             };
 
+            const releaseTagPage = `https://github.com/cortexide/binaries/releases/tag/${version}`;
             const links: DownloadLinks = {
                 windows: {
-                    x64: pick(/^VoidSetup-x64-.*\.exe$/i) ?? `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/VoidSetup-x64-${version}.exe`,
-                    arm: pick(/^VoidSetup-arm64-.*\.exe$/i) ?? `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/VoidSetup-arm64-${version}.exe`,
+                    x64:
+                        // Legacy Void
+                        pick(/^VoidSetup-x64-.*\.exe$/i)
+                        // CortexIDE Windows x64 installers
+                        ?? pick(/^CortexIDE.*x64.*\.exe$/i)
+                        ?? releaseTagPage,
+                    arm:
+                        // Legacy Void
+                        pick(/^VoidSetup-arm64-.*\.exe$/i)
+                        // CortexIDE Windows arm64 installers
+                        ?? pick(/^CortexIDE.*arm64.*\.exe$/i)
+                        ?? releaseTagPage,
                 },
                 mac: {
-                    intel: pick(/^Void\.x64\..*\.dmg$/i) ?? pick(/darwin-x64.*\.dmg$/i) ?? `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void.x64.${version}.dmg`,
-                    appleSilicon: pick(/^Void\.arm64\..*\.dmg$/i) ?? pick(/darwin-arm64.*\.dmg$/i) ?? `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void.arm64.${version}.dmg`,
+                    intel:
+                        // Legacy Void
+                        pick(/^Void\.x64\..*\.dmg$/i)
+                        // New CortexIDE naming
+                        ?? pick(/^CortexIDE\.x64\..*\.dmg$/i)
+                        // Alt darwin naming
+                        ?? pick(/darwin-x64.*\.dmg$/i)
+                        ?? releaseTagPage,
+                    appleSilicon:
+                        // Legacy Void
+                        pick(/^Void\.arm64\..*\.dmg$/i)
+                        // New CortexIDE naming
+                        ?? pick(/^CortexIDE\.arm64\..*\.dmg$/i)
+                        // Alt darwin naming
+                        ?? pick(/darwin-arm64.*\.dmg$/i)
+                        ?? releaseTagPage,
                 },
                 linux: {
-                    x64: pick(/^Void-.*glibc2\.29-x86_64\.AppImage$/i) ?? `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void-${version}.glibc2.29-x86_64.AppImage`,
+                    x64:
+                        // Prefer linux x64 tar.gz if available
+                        pick(/^Void-.*linux.*x64.*\.tar\.gz$/i)
+                        ?? pick(/^CortexIDE-.*linux.*x64.*\.tar\.gz$/i)
+                        // else AppImage
+                        ?? pick(/^Void-.*glibc2\.29-x86_64\.AppImage$/i)
+                        ?? pick(/^CortexIDE-.*glibc2\.29-x86_64\.AppImage$/i)
+                        // fallback
+                        ?? releaseTagPage,
                 },
             };
 
@@ -92,19 +125,20 @@ async function getLatestRelease(): Promise<{ version: string; links: DownloadLin
     }
 
     const version = cachedVersion ?? '1.99.30023';
+    const releasesLatest = `https://github.com/cortexide/binaries/releases/latest`;
     return {
         version,
         links: {
             windows: {
-                x64: `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/VoidSetup-x64-${version}.exe`,
-                arm: `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/VoidSetup-arm64-${version}.exe`,
+                x64: releasesLatest,
+                arm: releasesLatest,
             },
             mac: {
-                intel: `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void.x64.${version}.dmg`,
-                appleSilicon: `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void.arm64.${version}.dmg`,
+                intel: releasesLatest,
+                appleSilicon: releasesLatest,
             },
             linux: {
-                x64: `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void-${version}.glibc2.29-x86_64.AppImage`,
+                x64: releasesLatest,
             },
         },
     };
