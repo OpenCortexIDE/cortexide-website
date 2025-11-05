@@ -49,7 +49,7 @@ async function getLatestRelease(): Promise<{ version: string; links: DownloadLin
     }
 
     try {
-        const response = await fetch('https://api.github.com/repos/cortexide/binaries/releases/latest', {
+        const response = await fetch('https://api.github.com/repos/OpenCortexIDE/cortexide-binaries/releases/latest', {
             next: { revalidate: TTL / 1000 },
         });
 
@@ -69,7 +69,7 @@ async function getLatestRelease(): Promise<{ version: string; links: DownloadLin
                 return found?.browser_download_url;
             };
 
-            const releaseTagPage = `https://github.com/cortexide/binaries/releases/tag/${version}`;
+            const releaseTagPage = `https://github.com/OpenCortexIDE/cortexide-binaries/releases/tag/${version}`;
             const links: DownloadLinks = {
                 windows: {
                     x64:
@@ -125,7 +125,7 @@ async function getLatestRelease(): Promise<{ version: string; links: DownloadLin
     }
 
     const version = cachedVersion ?? '1.99.30023';
-    const releasesLatest = `https://github.com/cortexide/binaries/releases/latest`;
+    const releasesLatest = `https://github.com/OpenCortexIDE/cortexide-binaries/releases/latest`;
     return {
         version,
         links: {

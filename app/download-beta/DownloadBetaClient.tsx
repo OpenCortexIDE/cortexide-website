@@ -79,15 +79,15 @@ type DownloadLinks = {
 export default function DownloadBetaClient({ releaseVersion, links }: { releaseVersion: string, links?: DownloadLinks }) {
     const downloadLinks: DownloadLinks = links ?? {
         windows: {
-            x64: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/CortexIDE-Setup-x64-${releaseVersion}.exe`,
-            arm: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/CortexIDE-Setup-arm64-${releaseVersion}.exe`,
+            x64: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${releaseVersion}/CortexIDE-Setup-x64-${releaseVersion}.exe`,
+            arm: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${releaseVersion}/CortexIDE-Setup-arm64-${releaseVersion}.exe`,
         },
         mac: {
-            intel: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/CortexIDE.x64.${releaseVersion}.dmg`,
-            appleSilicon: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/CortexIDE.arm64.${releaseVersion}.dmg`,
+            intel: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${releaseVersion}/CortexIDE.x64.${releaseVersion}.dmg`,
+            appleSilicon: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${releaseVersion}/CortexIDE.arm64.${releaseVersion}.dmg`,
         },
         linux: {
-            x64: `https://github.com/cortexide/binaries/releases/download/${releaseVersion}/CortexIDE-${releaseVersion}.glibc2.29-x86_64.AppImage`,
+            x64: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${releaseVersion}/CortexIDE-${releaseVersion}.glibc2.29-x86_64.AppImage`,
         },
     };
 
