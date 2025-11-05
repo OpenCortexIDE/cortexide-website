@@ -11,11 +11,16 @@ const TTL = 15 * 60 * 1000; // 15 minutes
 
 // All required asset filenames (can be regex or exact)
 const REQUIRED_ASSETS = [
+    // Prefer new CortexIDE names, keep legacy Void for compatibility
+    (v: string) => `CortexIDE-Setup-x64-${v}.exe`,
+    (v: string) => `CortexIDE-Setup-arm64-${v}.exe`,
+    (v: string) => `CortexIDE.x64.${v}.dmg`,
+    (v: string) => `CortexIDE.arm64.${v}.dmg`,
+    // (v: string) => `CortexIDE-${v}.glibc2.29-x86_64.AppImage`,
     (v: string) => `VoidSetup-x64-${v}.exe`,
     (v: string) => `VoidSetup-arm64-${v}.exe`,
     (v: string) => `Void.x64.${v}.dmg`,
     (v: string) => `Void.arm64.${v}.dmg`,
-    // (v: string) => `Void-${v}.glibc2.29-x86_64.AppImage`,
 ];
 
 type DownloadLinks = {
@@ -30,32 +35,39 @@ async function getLatestRelease(): Promise<{ version: string; links: DownloadLin
     if (cachedVersion && now - lastChecked < TTL) {
         // When cachedVersion is hot but we don't cache links, reconstruct default links (fallback)
         const version = cachedVersion;
+        const normalized = version.startsWith('v') ? version.slice(1) : version;
         return {
             version,
             links: {
                 windows: {
-                    x64: `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/VoidSetup-x64-${version}.exe`,
-                    arm: `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/VoidSetup-arm64-${version}.exe`,
+                    x64: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE-Setup-x64-${normalized}.exe`,
+                    arm: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE-Setup-arm64-${normalized}.exe`,
                 },
                 mac: {
-                    intel: `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void.x64.${version}.dmg`,
-                    appleSilicon: `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void.arm64.${version}.dmg`,
+                    intel: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE.x64.${normalized}.dmg`,
+                    appleSilicon: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE.arm64.${normalized}.dmg`,
                 },
                 linux: {
-                    x64: `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void-${version}.glibc2.29-x86_64.AppImage`,
+                    x64: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE-${normalized}.glibc2.29-x86_64.AppImage`,
                 },
             },
         };
     }
 
     try {
+        const headers: Record<string, string> = {};
+        if (process.env.GITHUB_TOKEN) {
+            headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+        }
         const response = await fetch('https://api.github.com/repos/OpenCortexIDE/cortexide-binaries/releases/latest', {
             next: { revalidate: TTL / 1000 },
+            headers,
         });
 
         if (response.ok) {
             const data = await response.json();
             const version = data.tag_name as string;
+            const normalized = version.startsWith('v') ? version.slice(1) : version;
             const assets: Array<{ name: string; browser_download_url: string }> = data.assets;
             const assetNames: string[] = assets.map((a: any) => a.name);
 
@@ -69,7 +81,6 @@ async function getLatestRelease(): Promise<{ version: string; links: DownloadLin
                 return found?.browser_download_url;
             };
 
-            const releaseTagPage = `https://github.com/OpenCortexIDE/cortexide-binaries/releases/tag/${version}`;
             const links: DownloadLinks = {
                 windows: {
                     x64:
@@ -77,13 +88,15 @@ async function getLatestRelease(): Promise<{ version: string; links: DownloadLin
                         pick(/^VoidSetup-x64-.*\.exe$/i)
                         // CortexIDE Windows x64 installers
                         ?? pick(/^CortexIDE.*x64.*\.exe$/i)
-                        ?? releaseTagPage,
+                        // Construct direct link if not found
+                        ?? `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE-Setup-x64-${normalized}.exe`,
                     arm:
                         // Legacy Void
                         pick(/^VoidSetup-arm64-.*\.exe$/i)
                         // CortexIDE Windows arm64 installers
                         ?? pick(/^CortexIDE.*arm64.*\.exe$/i)
-                        ?? releaseTagPage,
+                        // Construct direct link if not found
+                        ?? `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE-Setup-arm64-${normalized}.exe`,
                 },
                 mac: {
                     intel:
@@ -93,7 +106,8 @@ async function getLatestRelease(): Promise<{ version: string; links: DownloadLin
                         ?? pick(/^CortexIDE\.x64\..*\.dmg$/i)
                         // Alt darwin naming
                         ?? pick(/darwin-x64.*\.dmg$/i)
-                        ?? releaseTagPage,
+                        // Construct direct link if not found
+                        ?? `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE.x64.${normalized}.dmg`,
                     appleSilicon:
                         // Legacy Void
                         pick(/^Void\.arm64\..*\.dmg$/i)
@@ -101,7 +115,8 @@ async function getLatestRelease(): Promise<{ version: string; links: DownloadLin
                         ?? pick(/^CortexIDE\.arm64\..*\.dmg$/i)
                         // Alt darwin naming
                         ?? pick(/darwin-arm64.*\.dmg$/i)
-                        ?? releaseTagPage,
+                        // Construct direct link if not found
+                        ?? `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE.arm64.${normalized}.dmg`,
                 },
                 linux: {
                     x64:
@@ -111,8 +126,8 @@ async function getLatestRelease(): Promise<{ version: string; links: DownloadLin
                         // else AppImage
                         ?? pick(/^Void-.*glibc2\.29-x86_64\.AppImage$/i)
                         ?? pick(/^CortexIDE-.*glibc2\.29-x86_64\.AppImage$/i)
-                        // fallback
-                        ?? releaseTagPage,
+                        // Construct direct link if not found
+                        ?? `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE-${normalized}.glibc2.29-x86_64.AppImage`,
                 },
             };
 
@@ -124,21 +139,41 @@ async function getLatestRelease(): Promise<{ version: string; links: DownloadLin
         console.error('Failed to fetch latest release:', e);
     }
 
-    const version = cachedVersion ?? '1.99.30023';
-    const releasesLatest = `https://github.com/OpenCortexIDE/cortexide-binaries/releases/latest`;
+    // Fallback: read version from cortexide-versions and construct direct URLs
+    const candidateVersionFiles = [
+        'https://raw.githubusercontent.com/OpenCortexIDE/cortexide-versions/main/latest.txt',
+        'https://raw.githubusercontent.com/OpenCortexIDE/cortexide-versions/main/version.txt',
+        'https://raw.githubusercontent.com/OpenCortexIDE/cortexide-versions/main/stable.txt',
+    ];
+    let version = cachedVersion ?? '1.99.30023';
+    for (const url of candidateVersionFiles) {
+        try {
+            const res = await fetch(url, { next: { revalidate: TTL / 1000 } });
+            if (res.ok) {
+                const text = (await res.text()).trim();
+                if (text) {
+                    version = text;
+                    break;
+                }
+            }
+        } catch {}
+    }
+    const normalized = version.startsWith('v') ? version.slice(1) : version;
+    cachedVersion = version;
+    lastChecked = now;
     return {
         version,
         links: {
             windows: {
-                x64: releasesLatest,
-                arm: releasesLatest,
+                x64: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE-Setup-x64-${normalized}.exe`,
+                arm: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE-Setup-arm64-${normalized}.exe`,
             },
             mac: {
-                intel: releasesLatest,
-                appleSilicon: releasesLatest,
+                intel: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE.x64.${normalized}.dmg`,
+                appleSilicon: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE.arm64.${normalized}.dmg`,
             },
             linux: {
-                x64: releasesLatest,
+                x64: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${version}/CortexIDE-${normalized}.glibc2.29-x86_64.AppImage`,
             },
         },
     };

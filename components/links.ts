@@ -13,7 +13,7 @@ export const changelogLink = '/changelog'
 export const downloadLink = '/download-beta'
 
 export const releaseLink = `https://github.com/OpenCortexIDE/cortexide/releases`
-export const binariesLink = `https://github.com/OpenCortexIDE/binaries/releases`
+export const binariesLink = `https://github.com/OpenCortexIDE/cortexide-binaries/releases`
 
 // const downloadPrefix = `https://github.com/voideditor/void/releases/latest/download`
 // export const downloadOfOS = {
