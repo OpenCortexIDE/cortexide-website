@@ -70,8 +70,14 @@ const DownloadButton = ({ url, children, className, platform, arch }: {
 };
 
 // Actual page content (Client Component with data hydration)
-export default function DownloadBetaClient({ releaseVersion }: { releaseVersion: string }) {
-    const downloadLinks = {
+type DownloadLinks = {
+    windows: { x64?: string; arm?: string };
+    mac: { intel?: string; appleSilicon?: string };
+    linux: { x64?: string };
+};
+
+export default function DownloadBetaClient({ releaseVersion, links }: { releaseVersion: string, links?: DownloadLinks }) {
+    const downloadLinks: DownloadLinks = links ?? {
         windows: {
             x64: `https://github.com/OpenCortexIDE/binaries/releases/download/${releaseVersion}/VoidSetup-x64-${releaseVersion}.exe`,
             arm: `https://github.com/OpenCortexIDE/binaries/releases/download/${releaseVersion}/VoidSetup-arm64-${releaseVersion}.exe`,
