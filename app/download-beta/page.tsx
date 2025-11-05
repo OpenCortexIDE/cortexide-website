@@ -19,9 +19,9 @@ const REQUIRED_ASSETS = [
 ];
 
 type DownloadLinks = {
-    windows: { x64?: string; arm?: string };
-    mac: { intel?: string; appleSilicon?: string };
-    linux: { x64?: string };
+    windows: { x64: string; arm: string };
+    mac: { intel: string; appleSilicon: string };
+    linux: { x64: string };
 };
 
 // Server-side helper
@@ -71,34 +71,17 @@ async function getLatestRelease(): Promise<{ version: string; links: DownloadLin
 
             const links: DownloadLinks = {
                 windows: {
-                    x64: pick(/^VoidSetup-x64-.*\.exe$/i),
-                    arm: pick(/^VoidSetup-arm64-.*\.exe$/i),
+                    x64: pick(/^VoidSetup-x64-.*\.exe$/i) ?? `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/VoidSetup-x64-${version}.exe`,
+                    arm: pick(/^VoidSetup-arm64-.*\.exe$/i) ?? `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/VoidSetup-arm64-${version}.exe`,
                 },
                 mac: {
-                    intel: pick(/^Void\.x64\..*\.dmg$/i) ?? pick(/darwin-x64.*\.dmg$/i),
-                    appleSilicon: pick(/^Void\.arm64\..*\.dmg$/i) ?? pick(/darwin-arm64.*\.dmg$/i),
+                    intel: pick(/^Void\.x64\..*\.dmg$/i) ?? pick(/darwin-x64.*\.dmg$/i) ?? `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void.x64.${version}.dmg`,
+                    appleSilicon: pick(/^Void\.arm64\..*\.dmg$/i) ?? pick(/darwin-arm64.*\.dmg$/i) ?? `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void.arm64.${version}.dmg`,
                 },
                 linux: {
-                    x64: pick(/^Void-.*glibc2\.29-x86_64\.AppImage$/i),
+                    x64: pick(/^Void-.*glibc2\.29-x86_64\.AppImage$/i) ?? `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void-${version}.glibc2.29-x86_64.AppImage`,
                 },
             };
-
-            // If some expected assets are missing, fall back to constructed URLs
-            if (!links.mac.intel) {
-                links.mac.intel = `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void.x64.${version}.dmg`;
-            }
-            if (!links.mac.appleSilicon) {
-                links.mac.appleSilicon = `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void.arm64.${version}.dmg`;
-            }
-            if (!links.windows.x64) {
-                links.windows.x64 = `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/VoidSetup-x64-${version}.exe`;
-            }
-            if (!links.windows.arm) {
-                links.windows.arm = `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/VoidSetup-arm64-${version}.exe`;
-            }
-            if (!links.linux.x64) {
-                links.linux.x64 = `https://github.com/OpenCortexIDE/binaries/releases/download/${version}/Void-${version}.glibc2.29-x86_64.AppImage`;
-            }
 
             cachedVersion = version;
             lastChecked = now;
