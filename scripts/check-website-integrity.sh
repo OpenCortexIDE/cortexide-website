@@ -403,7 +403,6 @@ check_content_integrity() {
     # Check for main pages
     local main_pages=(
         "app/page.tsx"
-        "app/changelog/page.tsx"
         "app/download-beta/page.tsx"
         "app/email/page.tsx"
     )

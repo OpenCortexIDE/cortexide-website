@@ -1,4 +1,4 @@
-export const discordLink = 'https://discord.gg/RSNjgaugJs'
+export const discordLink = 'https://discord.gg/RsqAVw2v'
 export const xLink = 'https://x.com/cortexide'
 
 // export const contributeLink = 'https://github.com/OpenCortexIDE/cortexide/blob/main/HOW_TO_CONTRIBUTE.md'
@@ -9,7 +9,6 @@ export const support_email = 'hello@cortexide.com'
 export const emailLink = `mailto:${support_email}`
 
 export const waitlistLink = '/email'
-export const changelogLink = '/changelog'
 export const downloadLink = '/download-beta'
 
 export const releaseLink = `https://github.com/OpenCortexIDE/cortexide/releases`

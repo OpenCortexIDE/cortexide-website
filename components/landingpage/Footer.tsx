@@ -2,7 +2,7 @@
 
 import { FaDiscord } from "react-icons/fa"
 import { FaXTwitter } from "react-icons/fa6"
-import { changelogLink, discordLink, downloadLink, emailLink, githubLink, support_email, waitlistLink, xLink } from "../links"
+import { discordLink, downloadLink, emailLink, githubLink, support_email, waitlistLink, xLink } from "../links"
 import { IoLogoGithub } from "react-icons/io"
 import Image from "next/image"
 
@@ -36,8 +36,6 @@ export const Footer = () => {
                     </a>
 
                     <a href={emailLink} className="text-white hover:underline">{support_email}</a>
-                    <a href={changelogLink} className="text-white hover:underline">{'Changelog'}</a>
-                    {/* <a href={changelogLink} className="text-white hover:underline">{'FAQ'}</a> */}
 
                 </div>
 
