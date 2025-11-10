@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { binariesLink, discordLink, githubLink, releaseLink } from '@/components/links';
-import { FaApple, FaWindows } from 'react-icons/fa';
+import { FaApple, FaWindows, FaLinux } from 'react-icons/fa';
 import './twinkle.css'
 import Image from 'next/image';
 import SparkleOverlay from './SparkleOverlay';
@@ -163,6 +163,21 @@ export default function DownloadBetaClient({ releaseVersion, links }: { releaseV
                             </DownloadButton>
                         </div>
 
+                        <div className='flex items-center gap-x-2'>
+                            <DownloadButton 
+                                url={downloadLinks.linux.x64} 
+                                className='relative w-full'
+                                platform='linux'
+                                arch='x64'
+                            >
+                                <SparkleOverlay number={25} seed={44} />
+                                <span className='flex items-center gap-2'>
+                                    <span className='text-white text-xl font-medium'>Download for Linux</span>
+                                    <FaLinux className='fill-white min-w-7 min-h-7' />
+                                </span>
+                            </DownloadButton>
+                        </div>
+
                     </div>
 
                 </div>
@@ -175,13 +190,6 @@ export default function DownloadBetaClient({ releaseVersion, links }: { releaseV
 
             {/* desc */}
             <div className='mx-auto text-center px-4 text-balance opacity-25 pt-60 pb-40'>
-                <div className='my-1'>
-                    For Linux users, download CortexIDE{' '}
-                    <a href={binariesLink} target='_blank' rel='noreferrer noopener nofollow' className='underline'>
-                        here
-                    </a>
-                    .
-                </div>
                 <div className='my-1'>
                     Alternatively, download CortexIDE from the source on{' '}
                     <a href={releaseLink} target='_blank' rel='noreferrer noopener nofollow' className='underline'>
