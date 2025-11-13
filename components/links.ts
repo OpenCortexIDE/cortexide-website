@@ -5,14 +5,17 @@ export const xLink = 'https://x.com/cortexide'
 export const githubLink = 'https://github.com/OpenCortexIDE/cortexide#readme'
 export const githubStarLink = 'https://github.com/OpenCortexIDE/cortexide'
 
-export const support_email = 'hello@cortexide.com'
-export const emailLink = `mailto:${support_email}`
+// export const support_email = 'hello@cortexide.com'
+// export const emailLink = `mailto:${support_email}`
 
 export const waitlistLink = '/email'
 export const downloadLink = '/download-beta'
 
 export const releaseLink = `https://github.com/OpenCortexIDE/cortexide/releases`
-export const binariesLink = `https://github.com/OpenCortexIDE/cortexide-binaries/releases`
+export const binariesLink = `https://github.com/OpenCortexIDE/cortexide-binaries`
+
+// Added new twitterLink export
+export const twitterLink = 'https://twitter.com/opencortexide'
 
 // const downloadPrefix = `https://github.com/voideditor/void/releases/latest/download`
 // export const downloadOfOS = {

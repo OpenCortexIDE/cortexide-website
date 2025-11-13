@@ -2,7 +2,7 @@
 
 import { FaDiscord } from "react-icons/fa"
 import { FaXTwitter } from "react-icons/fa6"
-import { discordLink, downloadLink, emailLink, githubLink, support_email, waitlistLink, xLink } from "../links"
+import { discordLink, downloadLink, githubLink, waitlistLink, xLink, twitterLink } from "../links"
 import { IoLogoGithub } from "react-icons/io"
 import Image from "next/image"
 
@@ -28,14 +28,15 @@ export const Footer = () => {
                     <a href={discordLink} target='_blank' rel="noreferrer noopener nofollow" className='group'>
                         <FaDiscord className='mt-1 size-5 group-hover:fill-blue-400 fill-blue-500' />
                     </a>
-                    <a href={xLink} target='_blank' rel="noreferrer noopener nofollow" className='group'>
+                    {/* <a href={xLink} target='_blank' rel="noreferrer noopener nofollow" className='group'>
                         <FaXTwitter className='mt-1 size-5 group-hover:fill-gray-400 fill-gray-300' />
-                    </a>
+                    </a> */}
                     <a href={githubLink} className='group'>
                         <IoLogoGithub className='mt-1 size-5 group-hover:fill-gray-400 fill-gray-300' />
                     </a>
 
-                    <a href={emailLink} className="text-white hover:underline">{support_email}</a>
+                    {/* <a href={emailLink} className="text-white hover:underline">{support_email}</a> */}
+                    {/* <a href={twitterLink} className="text-white hover:underline" target="_blank" rel="noopener noreferrer">@cortexide</a> */}
 
                 </div>
 
