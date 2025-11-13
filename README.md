@@ -9,7 +9,7 @@
 
 This is the sourcecode for Cortexide's website, https://opencortexide.com.
 
-See [void](http://github.com/voideditor/void) for our main repository.
+See [cortexide](https://github.com/OpenCortexIDE/cortexide) for our main repository.
 
 
 ## Contributing
