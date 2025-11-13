@@ -42,9 +42,11 @@ function CustomLink(props) {
   return <a target="_blank" rel="noopener noreferrer" {...props} />
 }
 
+// Updated RoundedImage to explicitly set alt prop for accessibility per build warnings
 function RoundedImage(props: ImageProps) {
-  // this has an alt even if linter says it doesnt. The ...props part adds it in.
-  return <Image className="mx-auto rounded-lg" {...props} />
+  const { alt, ...rest } = props;
+  // ensure alt prop is explicit for accessibility
+  return <Image alt={alt ?? ''} className="mx-auto rounded-lg" {...rest} />;
 }
 
 function Code({ ...props }) {
