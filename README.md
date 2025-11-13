@@ -1,4 +1,4 @@
-# Void's Website.
+# Cortexide's Website.
 <p align="center">
 <img src="app/icon.png" alt="Void Icon" width="100px">
 </p>
@@ -7,7 +7,7 @@
 
 
 
-This is the sourcecode for Void's website, https://voideditor.com.
+This is the sourcecode for Cortexide's website, https://opencortexide.com.
 
 See [void](http://github.com/voideditor/void) for our main repository.
 
