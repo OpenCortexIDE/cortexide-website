@@ -1,5 +1,6 @@
 'use client'
 
+import Image from "next/image";
 import { useRef, useState } from "react";
 import { FaCheck } from "react-icons/fa";
 import { logWaitlist } from "./landingpage_logging";
@@ -47,7 +48,14 @@ export const SignUp = () => {
             {/* <div className="absolute inset-0 z-0 w-full h-full scale-[3] origin-left transform opacity-0 lg:opacity-[50%] [mask-image:linear-gradient(#ffff,_transparent,_75%)] pointer-events-none select-none bg-[length:100%]" style={{ mixBlendMode: "overlay", backgroundImage: `url(${process.env.NEXT_PUBLIC_BG_NOISE_IMG_2})` }} /> */}
 
             <div className='w-full max-w-xl py-8 max-sm:px-4 px-8 bg-transparent shadow-2xl rounded-lg flex flex-col gap-6'>
-                <img className='isolate -mb-4 max-lg:-top-20 inset-0 pt-3 mx-auto ' src='/void/slice_of_void.png' alt={`A slice of the void`} height={80} width={80} />
+                <Image
+                    className='isolate -mb-4 max-lg:-top-20 inset-0 pt-3 mx-auto'
+                    src='/void/slice_of_void.png'
+                    alt='A slice of the void'
+                    height={80}
+                    width={80}
+                    priority
+                />
 
 
                 <h2 className="text-2xl lg:text-3xl font-bold text-center px-4 text-black"

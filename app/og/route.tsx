@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { ImageResponse } from 'next/og'
 import { baseUrl } from '../sitemap'
 process
@@ -12,7 +13,7 @@ export function GET(request: Request) {
   return new ImageResponse(
     (
       <div tw="flex flex-row w-full h-full items-center justify-start px-[120px] bg-white">
-        <img tw=' h-[300px] w-[300px] mr-[80px]' src={`${baseUrl}/cortexide-main.png`} />
+        <img tw=' h-[300px] w-[300px] mr-[80px]' src={`${baseUrl}/cortexide-main.png`} alt="CortexIDE logo" />
 
         <div tw="flex flex-col w-[620px]">
           <h2 tw="text-8xl font-bold tracking-tight text-left ">{title}</h2>
