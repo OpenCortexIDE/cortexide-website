@@ -69,9 +69,10 @@ const buildLegacyLinuxOptions = (): LinuxOption[] => {
         { id: 'deb-amd64', label: 'Linux .deb (AMD64)', url: base(`cortexide_${LEGACY_LINUX_RELEASE}_amd64.deb`) },
         { id: 'deb-arm64', label: 'Linux .deb (ARM64)', url: base(`cortexide_${LEGACY_LINUX_RELEASE}_arm64.deb`) },
     ];
-    return entries
-        .map((option) => ({ ...option, sourceVersion: LEGACY_LINUX_RELEASE }))
-        .concat(FALLBACK_LINUX_OPTION);
+    return [
+        ...entries.map((option) => ({ ...option, sourceVersion: LEGACY_LINUX_RELEASE })),
+        FALLBACK_LINUX_OPTION,
+    ];
 };
 
 const LEGACY_LINUX_OPTIONS = buildLegacyLinuxOptions();
