@@ -73,22 +73,29 @@ const DownloadButton = ({ url, children, className, platform, arch }: {
 type DownloadLinks = {
     windows: { x64: string; arm: string };
     mac: { intel: string; appleSilicon: string };
-    linux: { x64: string };
+    linux: Array<{ id: string; label: string; url: string }>;
 };
+
+const FALLBACK_LINUX_APPIMAGE_URL =
+    'https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/1.99.30001/CortexIDE-1.99.30001.glibc2.29-x86_64.AppImage';
 
 export default function DownloadBetaClient({ releaseVersion, links }: { releaseVersion: string, links?: DownloadLinks }) {
     const downloadLinks: DownloadLinks = links ?? {
         windows: {
-            x64: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${releaseVersion}/CortexIDE-Setup-x64-${releaseVersion}.exe`,
-            arm: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${releaseVersion}/CortexIDE-Setup-arm64-${releaseVersion}.exe`,
+            x64: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${releaseVersion}/CortexIDESetup-x64-${releaseVersion}.exe`,
+            arm: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${releaseVersion}/CortexIDESetup-arm64-${releaseVersion}.exe`,
         },
         mac: {
             intel: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${releaseVersion}/CortexIDE.x64.${releaseVersion}.dmg`,
             appleSilicon: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${releaseVersion}/CortexIDE.arm64.${releaseVersion}.dmg`,
         },
-        linux: {
-            x64: `https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/${releaseVersion}/CortexIDE-${releaseVersion}.glibc2.29-x86_64.AppImage`,
-        },
+        linux: [
+            {
+                id: 'linux-appimage-fallback',
+                label: 'Linux AppImage (Legacy 1.99.30001)',
+                url: FALLBACK_LINUX_APPIMAGE_URL,
+            },
+        ],
     };
 
     return (
@@ -163,16 +170,16 @@ export default function DownloadBetaClient({ releaseVersion, links }: { releaseV
                             </DownloadButton>
                         </div>
 
-                        <div className='flex items-center gap-x-2'>
+                        <div className='flex flex-col gap-3 w-full'>
                             <DownloadButton 
-                                url={downloadLinks.linux.x64} 
+                                url='/download-beta/linux' 
                                 className='relative w-full'
                                 platform='linux'
-                                arch='x64'
+                                arch='linux-landing'
                             >
                                 <SparkleOverlay number={25} seed={44} />
                                 <span className='flex items-center gap-2'>
-                                    <span className='text-white text-xl font-medium'>Download for Linux</span>
+                                    <span className='text-white text-xl font-medium'>View Linux downloads</span>
                                     <FaLinux className='fill-white min-w-7 min-h-7' />
                                 </span>
                             </DownloadButton>
@@ -189,10 +196,10 @@ export default function DownloadBetaClient({ releaseVersion, links }: { releaseV
             </section>
 
             {/* desc */}
-            <div className='mx-auto text-center px-4 text-balance opacity-25 pt-60 pb-40'>
+            <div className='mx-auto text-center px-4 text-balance pt-60 pb-40 text-white'>
                 <div className='my-1'>
                     Alternatively, download CortexIDE from the source on{' '}
-                    <a href={releaseLink} target='_blank' rel='noreferrer noopener nofollow' className='underline'>
+                    <a href={releaseLink} target='_blank' rel='noreferrer noopener nofollow' className='underline text-white'>
                         GitHub
                     </a>
                     .
