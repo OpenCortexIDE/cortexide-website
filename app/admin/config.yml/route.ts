@@ -1,21 +1,41 @@
-import { readFileSync } from 'fs'
-import { join } from 'path'
 import { NextResponse } from 'next/server'
 
+const configYaml = `backend:
+  name: github
+  repo: OpenCortexIDE/cortexide-website
+  branch: main
+  base_url: https://opencortexide.com
+  auth_type: pkce
+  auth_scope: repo
+
+media_folder: public/blog-images
+public_folder: /blog-images
+
+collections:
+  - name: "blog"
+    label: "Blog Posts"
+    folder: "app/blog/[slug]/content"
+    create: true
+    slug: "{{slug}}"
+    extension: "mdx"
+    format: "frontmatter"
+    frontmatter_delimiter: "---"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Slug", name: "slug", widget: "string", hint: "URL-friendly version (e.g., 'my-first-post'). Leave empty to auto-generate from title." }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Publish Date", name: "publishedAt", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: "Modified Date", name: "modifiedAt", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false, required: false }
+      - { label: "OG Image", name: "ogimage", widget: "string", required: false, hint: "Path to image, e.g., /blog-images/image.png" }
+      - { label: "Body", name: "body", widget: "markdown" }
+`
+
 export async function GET() {
-  try {
-    const configPath = join(process.cwd(), 'public', 'admin', 'config.yml')
-    const configContent = readFileSync(configPath, 'utf-8')
-    
-    return new NextResponse(configContent, {
-      headers: {
-        'Content-Type': 'text/yaml; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600',
-      },
-    })
-  } catch (error) {
-    console.error('Error reading config.yml:', error)
-    return new NextResponse('Config file not found', { status: 404 })
-  }
+  return new NextResponse(configYaml, {
+    headers: {
+      'Content-Type': 'text/yaml; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600',
+    },
+  })
 }
 
