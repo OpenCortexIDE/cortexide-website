@@ -5,7 +5,6 @@ const configYaml = `backend:
   repo: OpenCortexIDE/cortexide-website
   branch: main
   base_url: https://opencortexide.com
-  site_url: https://opencortexide.com
   auth_type: pkce
   auth_scope: repo
   app_id: ${process.env.GITHUB_OAUTH_CLIENT_ID || 'Ov23ligYcJ3u8pu3F5qz'}
