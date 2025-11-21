@@ -19,6 +19,7 @@ collections:
     slug: "{{slug}}"
     extension: "mdx"
     format: "yaml-frontmatter"
+    frontmatter_delimiter: "---"
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Description", name: "description", widget: "text" }
