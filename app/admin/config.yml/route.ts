@@ -8,7 +8,7 @@ const configYaml = `backend:
   site_url: https://opencortexide.com
   auth_type: pkce
   auth_scope: repo
-  proxy_url: https://opencortexide.com/api/auth
+  auth_endpoint: /api/auth
 
 media_folder: public/blog-images
 public_folder: /blog-images

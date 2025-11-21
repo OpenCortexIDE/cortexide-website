@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 /**
  * OAuth proxy endpoint for Decap CMS GitHub authentication
- * This handles the OAuth callback and redirects appropriately
+ * Handles OAuth callbacks and redirects to admin
  */
 export async function GET(request: Request) {
   const url = new URL(request.url)
@@ -10,15 +10,17 @@ export async function GET(request: Request) {
   const state = url.searchParams.get('state')
   const error = url.searchParams.get('error')
   
-  // If there's an error, redirect to admin with error
+  // Handle OAuth errors
   if (error) {
-    return NextResponse.redirect(`${url.origin}/admin/?error=${encodeURIComponent(error)}`)
+    const errorDescription = url.searchParams.get('error_description') || error
+    return NextResponse.redirect(`${url.origin}/admin/?error=${encodeURIComponent(errorDescription)}`)
   }
   
-  // If we have a code, redirect to admin with the OAuth parameters
-  // Decap CMS will handle the token exchange client-side
+  // If we have an authorization code, redirect to admin with it
+  // Decap CMS PKCE will handle the token exchange client-side
   if (code) {
     const adminUrl = new URL('/admin/', url.origin)
+    // Preserve the code and state for PKCE flow
     adminUrl.searchParams.set('code', code)
     if (state) {
       adminUrl.searchParams.set('state', state)
@@ -26,7 +28,8 @@ export async function GET(request: Request) {
     return NextResponse.redirect(adminUrl.toString())
   }
   
-  // Default redirect to admin
+  // If no code, check if this is an OAuth initiation request
+  // Redirect to admin to let Decap CMS handle it
   return NextResponse.redirect(`${url.origin}/admin/`)
 }
 
