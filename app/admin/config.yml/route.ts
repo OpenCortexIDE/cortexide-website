@@ -7,7 +7,6 @@ const configYaml = `backend:
   base_url: https://opencortexide.com
   auth_type: pkce
   auth_scope: repo
-  auth_endpoint: /admin/callback
 
 media_folder: public/blog-images
 public_folder: /blog-images
