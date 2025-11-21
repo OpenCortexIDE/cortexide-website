@@ -17,6 +17,10 @@ const nextConfig = {
                 source: '/admin',
                 destination: '/admin/index.html',
             },
+            {
+                source: '/admin/index.html',
+                destination: '/admin/index.html',
+            },
         ]
     },
     async headers() {
