@@ -26,9 +26,10 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Match all admin routes including static files
+  // Match all admin routes including the page route
   matcher: [
     '/admin',
+    '/admin/',
     '/admin/:path*',
   ],
 }
