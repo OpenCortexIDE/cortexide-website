@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 
 /**
- * OAuth proxy endpoint for Decap CMS GitHub authentication
- * Handles OAuth callbacks and redirects to admin
+ * OAuth callback handler for Decap CMS GitHub PKCE authentication
+ * GitHub redirects here with the authorization code, we redirect to /admin/ with hash fragment
+ * Decap CMS PKCE expects the code in the hash fragment, not query string
  */
 export async function GET(request: Request) {
   const url = new URL(request.url)
@@ -13,23 +14,60 @@ export async function GET(request: Request) {
   // Handle OAuth errors
   if (error) {
     const errorDescription = url.searchParams.get('error_description') || error
-    return NextResponse.redirect(`${url.origin}/admin/?error=${encodeURIComponent(errorDescription)}`)
+    // Redirect to admin with error in hash
+    return new NextResponse(
+      `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Authentication Error</title>
+  <script>
+    window.location.replace('/admin/#error=${encodeURIComponent(errorDescription)}');
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html>`,
+      {
+        headers: { 'Content-Type': 'text/html' },
+      }
+    )
   }
   
-  // If we have an authorization code, redirect to admin with it
-  // Decap CMS PKCE will handle the token exchange client-side
+  // If we have an authorization code, redirect to admin with it in hash fragment
+  // Decap CMS PKCE needs the code in the hash, not query string
   if (code) {
-    const adminUrl = new URL('/admin/', url.origin)
-    // Preserve the code and state for PKCE flow
-    adminUrl.searchParams.set('code', code)
+    // Build hash fragment with OAuth parameters
+    const hashParams = new URLSearchParams()
+    hashParams.set('code', code)
     if (state) {
-      adminUrl.searchParams.set('state', state)
+      hashParams.set('state', state)
     }
-    return NextResponse.redirect(adminUrl.toString())
+    
+    // Redirect to admin with code in hash fragment (PKCE requirement)
+    return new NextResponse(
+      `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Completing authentication...</title>
+  <script>
+    // PKCE requires code in hash fragment, not query string
+    window.location.replace('/admin/#${hashParams.toString()}');
+  </script>
+</head>
+<body>
+  <p>Completing authentication...</p>
+</body>
+</html>`,
+      {
+        headers: { 'Content-Type': 'text/html' },
+      }
+    )
   }
   
-  // If no code, check if this is an OAuth initiation request
-  // Redirect to admin to let Decap CMS handle it
+  // If no code, redirect to admin
   return NextResponse.redirect(`${url.origin}/admin/`)
 }
 

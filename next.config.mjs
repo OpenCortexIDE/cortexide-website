@@ -21,6 +21,11 @@ const nextConfig = {
                 source: '/admin/index.html',
                 destination: '/admin/index.html',
             },
+            // Ensure /admin/ (with trailing slash) also works
+            {
+                source: '/admin/',
+                destination: '/admin/index.html',
+            },
         ]
     },
     async headers() {
