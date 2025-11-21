@@ -5,8 +5,10 @@ const configYaml = `backend:
   repo: OpenCortexIDE/cortexide-website
   branch: main
   base_url: https://opencortexide.com
+  site_url: https://opencortexide.com
   auth_type: pkce
   auth_scope: repo
+  proxy_url: https://opencortexide.com/api/auth
 
 media_folder: public/blog-images
 public_folder: /blog-images
