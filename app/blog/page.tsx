@@ -25,34 +25,54 @@ export const metadata = {
 
 export default function Page() {
   let allBlogs = readPublicBlogPosts()
+    .sort((a, b) => new Date(a.metadata.publishedAt) > new Date(b.metadata.publishedAt) ? -1 : 1)
 
   return (
-    <main>
-      <section className='mx-auto px-2 mt-20 max-w-5xl w-full min-h-screen'>
+    <main className="min-h-screen">
+      <section className='mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20 max-w-4xl w-full'>
+        <div className="mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4 text-white">
+            CortexIDE Blog
+          </h1>
+          <p className="text-gray-400 text-lg">
+            Updates, guides, and insights about CortexIDE and AI-powered development.
+          </p>
+        </div>
 
-        <h1 className="font-semibold text-2xl tracking-tighter mb-8">CortexIDE Blog</h1>
-
-        <div>
-          {allBlogs
-            .sort((a, b) => new Date(a.metadata.publishedAt) > new Date(b.metadata.publishedAt) ? -1 : 1)
-            .map((post) => (
-              // <BlogLink slug={post.slug} name={post.metadata.title} date={post.metadata.publishedAt} />
+        {allBlogs.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-400 text-lg">No blog posts yet. Check back soon!</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {allBlogs.map((post) => (
               <Link
                 key={post.slug}
-                className={`flex flex-col space-y-1 mb-4 ${post.isDevOnly ? 'opacity-50' : ''}`}
                 href={`/blog/${post.slug}`}
+                className={`block group ${post.isDevOnly ? 'opacity-50' : ''}`}
               >
-                <div className=" flex flex-col w-full md:flex-row space-x-0 md:space-x-2">
-                  <p className="text-neutral-600 w-[180px] tabular-nums">
-                    {formatDate(post.metadata.publishedAt, false)}
-                  </p>
-                  <p className="text-neutral-900 tracking-tight font-bold">
-                    {post.metadata.title}
-                  </p>
-                </div>
+                <article className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-gray-700 transition-colors">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+                    <h2 className="text-xl md:text-2xl font-bold text-white group-hover:text-gray-200 transition-colors">
+                      {post.metadata.title}
+                    </h2>
+                    <time className="text-sm text-gray-500 whitespace-nowrap sm:ml-4">
+                      {formatDate(post.metadata.publishedAt, false)}
+                    </time>
+                  </div>
+                  {post.metadata.description && (
+                    <p className="text-gray-400 text-base leading-relaxed">
+                      {post.metadata.description}
+                    </p>
+                  )}
+                  <div className="mt-4 text-sm text-gray-500 group-hover:text-gray-400 transition-colors">
+                    Read more →
+                  </div>
+                </article>
               </Link>
             ))}
-        </div>
+          </div>
+        )}
       </section>
     </main>
   )

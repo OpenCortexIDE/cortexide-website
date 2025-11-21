@@ -10,7 +10,15 @@ const nextConfig = {
         swcPlugins: [
             ['glass-js/swc', {}],
         ],
-    }
+    },
+    async rewrites() {
+        return [
+            {
+                source: '/admin',
+                destination: '/admin/index.html',
+            },
+        ]
+    },
 }
 
 const withMDX = createMDX({

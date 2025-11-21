@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { formatDate, readPublicBlogPosts, postType } from '../utils'
 import { baseUrl } from '../../sitemap'
 import { Metadata } from 'next'
@@ -68,7 +69,7 @@ export default function BlogPost({ params }) {
     const ogImageUrl = ogImageUrlOfPost(post)
 
     return (
-        <section className='mx-auto px-2 my-20 max-w-2xl w-full min-h-screen'>
+        <section className='mx-auto px-4 sm:px-6 lg:px-8 py-20 max-w-3xl w-full min-h-screen'>
             <script
                 type="application/ld+json"
                 suppressHydrationWarning
@@ -96,22 +97,47 @@ export default function BlogPost({ params }) {
                 }}
             />
 
-            <div>
-                <h1 className="title font-semibold text-2xl tracking-tighter">
+            <div className="mb-8">
+                <Link 
+                    href="/blog"
+                    className="text-gray-400 hover:text-white text-sm mb-6 inline-block transition-colors"
+                >
+                    ← Back to Blog
+                </Link>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4 text-white">
                     {post.metadata.title}
                 </h1>
-                <p className="text-sm text-neutral-600">
-                    {formatDate(post.metadata.publishedAt)}
-                </p>
+                <div className="flex items-center gap-4 text-sm text-gray-400">
+                    <time dateTime={post.metadata.publishedAt}>
+                        {formatDate(post.metadata.publishedAt)}
+                    </time>
+                    {post.metadata.modifiedAt && post.metadata.modifiedAt !== post.metadata.publishedAt && (
+                        <span className="text-gray-600">
+                            Updated {formatDate(post.metadata.modifiedAt)}
+                        </span>
+                    )}
+                </div>
+                {post.metadata.description && (
+                    <p className="text-gray-400 text-lg mt-4 leading-relaxed">
+                        {post.metadata.description}
+                    </p>
+                )}
             </div>
 
-            <main>
-                <article className='prose max-w-3xl mx-auto'>
-                    <div className="flex justify-between items-center mt-2 mb-8 text-sm">
-                    </div>
-                    <CustomMDX source={post.content} />
-                </article>
-            </main>
+            <article className='prose prose-invert prose-lg max-w-none 
+                prose-headings:text-white prose-headings:font-bold
+                prose-p:text-gray-300 prose-p:leading-relaxed
+                prose-a:text-blue-400 prose-a:no-underline hover:prose-a:text-blue-300 hover:prose-a:underline
+                prose-strong:text-white prose-strong:font-semibold
+                prose-code:text-blue-400 prose-code:bg-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+                prose-pre:bg-gray-900 prose-pre:border prose-pre:border-gray-800
+                prose-blockquote:text-gray-400 prose-blockquote:border-gray-700
+                prose-ul:text-gray-300 prose-ol:text-gray-300
+                prose-li:text-gray-300
+                prose-img:rounded-lg prose-img:border prose-img:border-gray-800
+                prose-hr:border-gray-800'>
+                <CustomMDX source={post.content} />
+            </article>
 
         </section>
     )

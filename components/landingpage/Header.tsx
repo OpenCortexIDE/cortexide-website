@@ -33,6 +33,14 @@ export const Header = () => {
                     </div>
                 </Link>
 
+                <Link draggable={false} href="/blog" className='group py-1 px-2 rounded-md overflow-hidden hover:bg-gray-800 duration-100 max-sm:hidden'>
+                    <div className='flex items-center justify-center duration-200 gap-1'>
+                        <span className='text-lg whitespace-nowrap text-white '>
+                            Blog
+                        </span>
+                    </div>
+                </Link>
+
                 {/* <Link draggable={false} href={waitlistLink} className='group py-1 px-2 rounded-md overflow-hidden hover:bg-gray-100 duration-100'>
                     <div className='flex items-center justify-center duration-200 gap-1'>
                         <span className='text-lg whitespace-nowrap text-black '>
