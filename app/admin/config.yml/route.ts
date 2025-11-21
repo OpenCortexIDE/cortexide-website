@@ -18,11 +18,8 @@ collections:
     create: true
     slug: "{{slug}}"
     extension: "mdx"
-    format: "frontmatter"
-    frontmatter_delimiter: "---"
     fields:
       - { label: "Title", name: "title", widget: "string" }
-      - { label: "Slug", name: "slug", widget: "string", hint: "URL-friendly version (e.g., 'my-first-post'). Leave empty to auto-generate from title." }
       - { label: "Description", name: "description", widget: "text" }
       - { label: "Publish Date", name: "publishedAt", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "Modified Date", name: "modifiedAt", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false, required: false }
