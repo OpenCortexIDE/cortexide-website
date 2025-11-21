@@ -43,15 +43,6 @@ const nextConfig = {
                     },
                 ],
             },
-            {
-                source: '/admin/:path*',
-                headers: [
-                    {
-                        key: 'Content-Security-Policy',
-                        value: "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://unpkg.com https://identity.netlify.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.github.com https://github.com https://unpkg.com;",
-                    },
-                ],
-            },
         ]
     },
 }
