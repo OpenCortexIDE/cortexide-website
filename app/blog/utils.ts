@@ -39,7 +39,25 @@ export function readPublicBlogPosts(): postType[] {
 
   const dir = path.join(process.cwd(), 'app', 'blog', '[slug]', 'content')
 
-  let mdxFileNames = fs.readdirSync(dir)
+  // Check if directory exists, return empty array if it doesn't
+  if (!fs.existsSync(dir)) {
+    return []
+  }
+
+  let mdxFileNames: string[] = []
+  
+  try {
+    mdxFileNames = fs.readdirSync(dir)
+    // Filter out non-MDX files
+    mdxFileNames = mdxFileNames.filter(file => file.endsWith('.mdx'))
+  } catch (error) {
+    // Directory doesn't exist or can't be read, return empty array
+    return []
+  }
+  
+  if (mdxFileNames.length === 0) {
+    return []
+  }
 
   return mdxFileNames.map((fileWithDotMdx) => {
     let { name: fileName } = path.parse(fileWithDotMdx)
