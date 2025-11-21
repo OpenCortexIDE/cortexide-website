@@ -11,15 +11,18 @@ const nextConfig = {
             ['glass-js/swc', {}],
         ],
     },
-    // Removed rewrites - using Next.js page route instead
-    // async rewrites() {
-    //     return [
-    //         {
-    //             source: '/admin',
-    //             destination: '/admin/index.html',
-    //         },
-    //     ]
-    // },
+    async rewrites() {
+        return [
+            {
+                source: '/admin',
+                destination: '/admin',
+            },
+            {
+                source: '/admin/',
+                destination: '/admin',
+            },
+        ]
+    },
     async headers() {
         return [
             {
