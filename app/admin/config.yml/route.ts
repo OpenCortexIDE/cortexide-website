@@ -18,6 +18,7 @@ collections:
     create: true
     slug: "{{slug}}"
     extension: "mdx"
+    format: "yaml-frontmatter"
     fields:
       - { label: "Title", name: "title", widget: "string" }
       - { label: "Description", name: "description", widget: "text" }
