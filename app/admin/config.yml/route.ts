@@ -8,6 +8,7 @@ const configYaml = `backend:
   site_url: https://opencortexide.com
   auth_type: pkce
   auth_scope: repo
+  app_id: ${process.env.GITHUB_OAUTH_CLIENT_ID || 'YOUR_GITHUB_CLIENT_ID'}
 
 media_folder: public/blog-images
 public_folder: /blog-images

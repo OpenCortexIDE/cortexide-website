@@ -6,6 +6,10 @@ backend:
   site_url: https://opencortexide.com
   auth_type: pkce
   auth_scope: repo
+  app_id: YOUR_GITHUB_CLIENT_ID_HERE
+  # IMPORTANT: Replace YOUR_GITHUB_CLIENT_ID_HERE with your actual GitHub OAuth App Client ID
+  # Get it from: https://github.com/settings/developers
+  # Also set Authorization callback URL to: https://opencortexide.com/admin/
 
 media_folder: public/blog-images
 public_folder: /blog-images
