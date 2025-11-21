@@ -10,19 +10,11 @@
   <!-- Include the script that builds the page and powers Decap CMS -->
   <script src="https://unpkg.com/decap-cms@3.0.0/dist/decap-cms.js"></script>
   <script>
-    // Debug: Log when CMS is initialized
-    if (window.CMS) {
-      window.CMS.registerEventListener({
-        on: {
-          preSave: () => console.log('CMS: Pre-save'),
-          postSave: () => console.log('CMS: Post-save'),
-        }
-      });
-    }
-    // Log config loading
+    // Log config loading and page load
     window.addEventListener('load', () => {
       console.log('Admin page loaded');
       console.log('Current URL:', window.location.href);
+      console.log('CMS available:', typeof window.CMS !== 'undefined');
     });
   </script>
 </body>
