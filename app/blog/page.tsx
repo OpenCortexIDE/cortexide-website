@@ -1,10 +1,25 @@
 import Link from "next/link"
 import { readPublicBlogPosts, formatDate } from "./utils"
-
+import { baseUrl } from "../sitemap"
 
 export const metadata = {
   title: 'Blog',
-  description: `Void's official blog page.`,
+  description: `CortexIDE's official blog page.`,
+  alternates: {
+    canonical: `${baseUrl}/blog`,
+  },
+  openGraph: {
+    siteName: 'CortexIDE',
+    title: 'CortexIDE Blog',
+    description: `CortexIDE's official blog page.`,
+    type: 'website',
+    url: `${baseUrl}/blog`,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'CortexIDE Blog',
+    description: `CortexIDE's official blog page.`,
+  },
 }
 
 
@@ -15,7 +30,7 @@ export default function Page() {
     <main>
       <section className='mx-auto px-2 mt-20 max-w-5xl w-full min-h-screen'>
 
-        {/* <h1 className="font-semibold text-2xl tracking-tighter mb-8">The void Blog</h1> */}
+        <h1 className="font-semibold text-2xl tracking-tighter mb-8">CortexIDE Blog</h1>
 
         <div>
           {allBlogs

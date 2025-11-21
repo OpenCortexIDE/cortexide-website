@@ -2,6 +2,27 @@ import React from 'react';
 import Link from 'next/link';
 import { FaArrowLeft, FaGithub, FaLinux } from 'react-icons/fa';
 import { getLatestRelease, LinuxOption } from '../lib/releases';
+import { baseUrl } from '../../sitemap';
+
+export const metadata = {
+  title: 'Download CortexIDE for Linux - AI Code Editor',
+  description: 'Download CortexIDE for Linux. Available as tar.gz, .deb, and AppImage. Choose the build that matches your architecture and package manager.',
+  alternates: {
+    canonical: `${baseUrl}/download-beta/linux`,
+  },
+  openGraph: {
+    siteName: 'CortexIDE',
+    title: 'Download CortexIDE for Linux',
+    description: 'Download CortexIDE for Linux. Available as tar.gz, .deb, and AppImage.',
+    type: 'website',
+    url: `${baseUrl}/download-beta/linux`,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Download CortexIDE for Linux',
+    description: 'Download CortexIDE for Linux. Available as tar.gz, .deb, and AppImage.',
+  },
+};
 
 const parseLinuxOption = (option: LinuxOption) => {
     const formatMatch = option.label.match(/Linux\s+(.*)\s+\(/i);

@@ -340,7 +340,7 @@ const ALotMoreFeatures = () => {
                     </div>
 
                     <div className="w-full flex items-center justify-center">
-                        <img src='/demos3/agent.png' alt='Agent Mode' className={`max-h-[700px] max-w-full w-auto h-auto rounded-lg object-contain`} />
+                        <img src='/demos3/agent.png' alt='CortexIDE Agent Mode - AI code editor with file management and terminal access' className={`max-h-[700px] max-w-full w-auto h-auto rounded-lg object-contain`} />
                     </div>
                 </div>
 
@@ -354,7 +354,7 @@ const ALotMoreFeatures = () => {
                         {`Gather mode is a restricted version of Agent mode that can only read and search, but not modify or edit.`}
                     </div>
                     <div className="w-full flex items-center justify-center">
-                        <img src='/demos3/gather.png' alt='Gather Mode' className={`max-h-[700px] max-w-full w-auto h-auto rounded-lg object-contain`} />
+                        <img src='/demos3/gather.png' alt='CortexIDE Gather Mode - Read-only AI code editor for safe codebase exploration' className={`max-h-[700px] max-w-full w-auto h-auto rounded-lg object-contain`} />
                     </div>
                 </div>
             </div>
@@ -423,11 +423,11 @@ const GetStartedWithVoid = () => {
 
                 {/* <Image className='brightness-110 max-lg:-top-20 inset-0 mx-auto' src='/void/logo_cube_noshadow.png' alt={`A slice of the void`} height={80} width={80} /> */}
 
-                <h1 className='  text-center font-extrabold tracking-tighter leading-tight hover:brightness-110 transition duration-200'>
+                <h2 className='  text-center font-extrabold tracking-tighter leading-tight hover:brightness-110 transition duration-200'>
                     <span className='text-white drop-shadow-xl text-3xl font-bold tracking-tighter'>
                         Get Started with CortexIDE.
                     </span>
-                </h1>
+                </h2>
 
 
                 <div className='isolate space-y-4'>

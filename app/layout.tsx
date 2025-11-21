@@ -12,12 +12,26 @@ import { CSPostHogProvider } from '../components/providers'
 
 // const inter = Inter({ subsets: ["latin"] });
 
-// // I guess this is the default if a page doesn't specify metadata?
-// export const metadata: Metadata = {
-//     title: "Glass",
-//     description: "Glass is an AI copilot for React and Next.js developers that makes frontend development fast. Stop wasting time switching between the browser and your code, and make visual changes from the browser in realtime.  ",
-//     // icons: [{ url: process.env.BASE_URL + '/glass.svg' }], // no idea what this is for, icon.svg just existing should be fine 
-// };
+import { Metadata } from 'next';
+import { baseUrl } from './sitemap';
+
+// Default metadata if a page doesn't specify its own
+export const metadata: Metadata = {
+    title: "CortexIDE - Open Source AI Code Editor",
+    description: "CortexIDE is an open source Cursor alternative. Full privacy. Fully-featured. Write code with the best AI tools, use any model, and retain full control over your data.",
+    icons: {
+        icon: '/icon.png',
+        apple: '/icon.png',
+    },
+    openGraph: {
+        siteName: 'CortexIDE',
+        type: 'website',
+        locale: 'en_US',
+    },
+    twitter: {
+        card: 'summary_large_image',
+    },
+};
 
 
 

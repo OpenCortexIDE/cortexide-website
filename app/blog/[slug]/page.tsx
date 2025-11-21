@@ -23,7 +23,11 @@ export function generateMetadata({ params }): Metadata {
     return {
         title,
         description,
+        alternates: {
+            canonical: `${baseUrl}/blog/${post.slug}`,
+        },
         openGraph: {
+            siteName: 'CortexIDE',
             title,
             description,
             type: 'article',
@@ -79,8 +83,14 @@ export default function BlogPost({ params }) {
                         image: ogImageUrl,
                         url: `${baseUrl}/blog/${post.slug}`,
                         author: {
-                            '@type': 'Person',
-                            name: 'Void Editor',
+                            '@type': 'Organization',
+                            name: 'CortexIDE',
+                            url: baseUrl,
+                        },
+                        publisher: {
+                            '@type': 'Organization',
+                            name: 'CortexIDE',
+                            url: baseUrl,
                         },
                     }),
                 }}

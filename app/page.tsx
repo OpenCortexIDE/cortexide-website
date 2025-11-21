@@ -11,10 +11,14 @@ const ogImage = `${baseUrl}/og?title=${encodeURIComponent(shortTitle)}&descripti
 export const metadata = {
   title,
   description,
+  alternates: {
+    canonical: `${baseUrl}`,
+  },
   openGraph: {
+    siteName: 'CortexIDE',
     title: shortTitle,
     description,
-    type: 'article',
+    type: 'website',
     url: `${baseUrl}`,
     images: [
       {
@@ -55,6 +59,23 @@ export default function Home() {
               name: 'CortexIDE',
               url: baseUrl
             }
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'CortexIDE',
+            url: baseUrl,
+            logo: `${baseUrl}/cortexide-main.png`,
+            description: description,
+            sameAs: [
+              'https://github.com/OpenCortexIDE'
+            ]
           }),
         }}
       />
