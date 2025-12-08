@@ -60,9 +60,9 @@ async function getHandler() {
         }
         
         // Try to require the module
-        const module = requireFunc(dbPath)
+        const dbModule = requireFunc(dbPath)
         // The databaseClient is a named export, not default
-        databaseClient = module.databaseClient || module.default?.databaseClient || module.default
+        databaseClient = dbModule.databaseClient || dbModule.default?.databaseClient || dbModule.default
         if (databaseClient) {
           loaded = true
           console.log('Successfully loaded database client from:', dbPath)
