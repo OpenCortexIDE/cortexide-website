@@ -71,12 +71,60 @@ export async function GET(request: NextRequest) {
   try {
     const h = getHandler()
     const res = new NextResponse()
-    await h(request, res)
-    return res
+    
+    // Convert Next.js request to Node.js format for TinaNodeBackend
+    const nodeReq = {
+      url: request.url,
+      method: request.method,
+      headers: Object.fromEntries(request.headers.entries()),
+      query: Object.fromEntries(new URL(request.url).searchParams.entries()),
+    } as any
+    
+    // Create a promise that resolves when the handler calls res methods
+    return new Promise<NextResponse>((resolve) => {
+      let statusCode = 200
+      const headers: Record<string, string> = {}
+      
+      const nodeRes = {
+        status(code: number) {
+          statusCode = code
+          return nodeRes
+        },
+        json(data: any) {
+          resolve(NextResponse.json(data, { status: statusCode, headers }))
+          return nodeRes
+        },
+        send(data: any) {
+          resolve(new NextResponse(data, { status: statusCode, headers }))
+          return nodeRes
+        },
+        setHeader(name: string, value: string) {
+          headers[name] = value
+          return nodeRes
+        },
+        end() {
+          resolve(new NextResponse(null, { status: statusCode, headers }))
+          return nodeRes
+        },
+      } as any
+      
+      try {
+        h(nodeReq, nodeRes)
+      } catch (error) {
+        console.error('Error calling handler:', error instanceof Error ? error.message : String(error))
+        resolve(NextResponse.json(
+          { error: 'Internal server error processing request' },
+          { status: 500 }
+        ))
+      }
+    })
   } catch (error) {
     console.error('Error in GET handler:', error instanceof Error ? error.message : String(error))
+    if (error instanceof Error) {
+      console.error('Stack:', error.stack)
+    }
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
@@ -92,13 +140,62 @@ export async function POST(request: NextRequest) {
   
   try {
     const h = getHandler()
-    const res = new NextResponse()
-    await h(request, res)
-    return res
+    const body = await request.text()
+    
+    // Convert Next.js request to Node.js format for TinaNodeBackend
+    const nodeReq = {
+      url: request.url,
+      method: request.method,
+      headers: Object.fromEntries(request.headers.entries()),
+      body: body,
+      query: Object.fromEntries(new URL(request.url).searchParams.entries()),
+    } as any
+    
+    // Create a promise that resolves when the handler calls res methods
+    return new Promise<NextResponse>((resolve) => {
+      let statusCode = 200
+      const headers: Record<string, string> = {}
+      
+      const nodeRes = {
+        status(code: number) {
+          statusCode = code
+          return nodeRes
+        },
+        json(data: any) {
+          resolve(NextResponse.json(data, { status: statusCode, headers }))
+          return nodeRes
+        },
+        send(data: any) {
+          resolve(new NextResponse(data, { status: statusCode, headers }))
+          return nodeRes
+        },
+        setHeader(name: string, value: string) {
+          headers[name] = value
+          return nodeRes
+        },
+        end() {
+          resolve(new NextResponse(null, { status: statusCode, headers }))
+          return nodeRes
+        },
+      } as any
+      
+      try {
+        h(nodeReq, nodeRes)
+      } catch (error) {
+        console.error('Error calling handler:', error instanceof Error ? error.message : String(error))
+        resolve(NextResponse.json(
+          { error: 'Internal server error processing request' },
+          { status: 500 }
+        ))
+      }
+    })
   } catch (error) {
     console.error('Error in POST handler:', error instanceof Error ? error.message : String(error))
+    if (error instanceof Error) {
+      console.error('Stack:', error.stack)
+    }
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
