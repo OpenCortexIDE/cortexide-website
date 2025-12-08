@@ -12,6 +12,10 @@ export async function GET(request: Request) {
     adminUrl.searchParams.set(key, value)
   })
   
+  // CSP policy for admin callback - allows inline scripts for redirect
+  // Note: This route doesn't need unsafe-eval, only inline scripts for the redirect
+  const callbackCSP = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
+  
   // Return HTML that redirects and preserves hash fragment
   return new NextResponse(
     `<!DOCTYPE html>
@@ -34,6 +38,7 @@ export async function GET(request: Request) {
     {
       headers: {
         'Content-Type': 'text/html',
+        'Content-Security-Policy': callbackCSP,
       },
     }
   )

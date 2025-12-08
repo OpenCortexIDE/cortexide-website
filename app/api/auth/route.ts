@@ -11,6 +11,13 @@ export async function GET(request: Request) {
   const state = url.searchParams.get('state')
   const error = url.searchParams.get('error')
   
+  // CORS headers for Decap CMS PKCE OAuth flow
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  }
+  
   // Handle OAuth errors
   if (error) {
     const errorDescription = url.searchParams.get('error_description') || error
@@ -30,7 +37,10 @@ export async function GET(request: Request) {
 </body>
 </html>`,
       {
-        headers: { 'Content-Type': 'text/html' },
+        headers: { 
+          'Content-Type': 'text/html',
+          ...corsHeaders,
+        },
       }
     )
   }
@@ -62,12 +72,29 @@ export async function GET(request: Request) {
 </body>
 </html>`,
       {
-        headers: { 'Content-Type': 'text/html' },
+        headers: { 
+          'Content-Type': 'text/html',
+          ...corsHeaders,
+        },
       }
     )
   }
   
   // If no code, redirect to admin
-  return NextResponse.redirect(`${url.origin}/admin/`)
+  // This handles the case when Decap CMS initiates OAuth flow
+  return NextResponse.redirect(`${url.origin}/admin/`, {
+    headers: corsHeaders,
+  })
+}
+
+export async function OPTIONS() {
+  // Handle CORS preflight requests
+  return new NextResponse(null, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
 }
 

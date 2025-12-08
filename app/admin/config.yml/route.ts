@@ -5,20 +5,25 @@ import { NextResponse } from 'next/server'
  * 
  * This is the canonical source of truth for Netlify CMS configuration.
  * It serves the config.yml dynamically, allowing environment variable injection
- * (e.g., GITHUB_OAUTH_CLIENT_ID).
+ * (e.g., GITHUB_OAUTH_CLIENT_ID) and dynamic base_url based on the request origin.
  * 
  * Note: A static file at public/admin/config.yml was removed to avoid conflicts
  * with Next.js routing. This route handler is the only source for the config.
  */
-const configYaml = `backend:
+export async function GET(request: Request) {
+  // Get the base URL from the request origin (works for both localhost and production)
+  const url = new URL(request.url)
+  const baseUrl = url.origin // e.g., http://localhost:3000 or https://opencortexide.com
+  
+  const configYaml = `backend:
   name: github
   repo: OpenCortexIDE/cortexide-website
   branch: main
-  base_url: https://opencortexide.com
+  base_url: ${baseUrl}
   auth_type: pkce
   auth_scope: repo
   app_id: ${process.env.GITHUB_OAUTH_CLIENT_ID || 'Ov23ligYcJ3u8pu3F5qz'}
-  proxy_url: https://opencortexide.com/api/auth
+  proxy_url: ${baseUrl}/api/auth
 
 media_folder: public/blog-images
 public_folder: /blog-images
@@ -40,12 +45,15 @@ collections:
       - { label: "OG Image", name: "ogimage", widget: "string", required: false, hint: "Path to image, e.g., /blog-images/image.png" }
       - { label: "Body", name: "body", widget: "markdown" }
 `
-
-export async function GET() {
+  
+  // Disable caching for config.yml to ensure fresh config on each request
+  // This is critical for development where base_url needs to match the current origin
   return new NextResponse(configYaml, {
     headers: {
       'Content-Type': 'text/yaml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600',
+      'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
     },
