@@ -17,17 +17,30 @@ function getHandler() {
     return handler
   }
 
-  // Use appropriate auth provider based on mode
-  const authProvider = isTinaCloud
-    ? TinaCloudBackendAuthProvider()
-    : LocalBackendAuthProvider()
+  try {
+    // Verify database client is available
+    if (!databaseClient) {
+      throw new Error('Database client is not available. Make sure tinacms build ran successfully.')
+    }
 
-  handler = TinaNodeBackend({
-    authProvider,
-    databaseClient,
-  })
+    // Use appropriate auth provider based on mode
+    const authProvider = isTinaCloud
+      ? TinaCloudBackendAuthProvider()
+      : LocalBackendAuthProvider()
 
-  return handler
+    handler = TinaNodeBackend({
+      authProvider,
+      databaseClient,
+    })
+
+    return handler
+  } catch (error) {
+    console.error('Error initializing TinaCMS handler:', error instanceof Error ? error.message : String(error))
+    if (error instanceof Error) {
+      console.error('Stack:', error.stack)
+    }
+    throw error
+  }
 }
 
 /**
@@ -119,26 +132,52 @@ export async function GET(request: NextRequest) {
         } as any
         
         try {
+          console.log('Calling TinaCMS handler with:', {
+            method: nodeReq.method,
+            url: nodeReq.url,
+            hasBody: !!nodeReq.body,
+            headers: Object.keys(nodeReq.headers),
+          })
+          
           const result = h(nodeReq, nodeRes)
+          
           // If handler returns a promise, wait for it
           if (result && typeof result.then === 'function') {
-            result.catch((err: any) => {
-              if (!resolved) {
-                resolved = true
-                console.error('Handler promise rejected:', err)
-                resolve(NextResponse.json(
-                  { error: 'Internal server error processing request' },
-                  { status: 500 }
-                ))
-              }
-            })
+            result
+              .then(() => {
+                // Handler completed but didn't call response methods
+                if (!resolved) {
+                  console.warn('Handler promise resolved but no response was sent')
+                  resolved = true
+                  resolve(NextResponse.json(
+                    { error: 'Handler completed without sending response' },
+                    { status: 500 }
+                  ))
+                }
+              })
+              .catch((err: any) => {
+                if (!resolved) {
+                  resolved = true
+                  console.error('Handler promise rejected:', err)
+                  if (err instanceof Error) {
+                    console.error('Error stack:', err.stack)
+                  }
+                  resolve(NextResponse.json(
+                    { error: 'Internal server error processing request', details: err instanceof Error ? err.message : String(err) },
+                    { status: 500 }
+                  ))
+                }
+              })
           }
         } catch (error) {
           if (!resolved) {
             resolved = true
             console.error('Error calling handler:', error instanceof Error ? error.message : String(error))
+            if (error instanceof Error) {
+              console.error('Error stack:', error.stack)
+            }
             resolve(NextResponse.json(
-              { error: 'Internal server error processing request' },
+              { error: 'Internal server error processing request', details: error instanceof Error ? error.message : String(error) },
               { status: 500 }
             ))
           }
@@ -228,26 +267,52 @@ export async function POST(request: NextRequest) {
         } as any
         
         try {
+          console.log('Calling TinaCMS handler with:', {
+            method: nodeReq.method,
+            url: nodeReq.url,
+            hasBody: !!nodeReq.body,
+            headers: Object.keys(nodeReq.headers),
+          })
+          
           const result = h(nodeReq, nodeRes)
+          
           // If handler returns a promise, wait for it
           if (result && typeof result.then === 'function') {
-            result.catch((err: any) => {
-              if (!resolved) {
-                resolved = true
-                console.error('Handler promise rejected:', err)
-                resolve(NextResponse.json(
-                  { error: 'Internal server error processing request' },
-                  { status: 500 }
-                ))
-              }
-            })
+            result
+              .then(() => {
+                // Handler completed but didn't call response methods
+                if (!resolved) {
+                  console.warn('Handler promise resolved but no response was sent')
+                  resolved = true
+                  resolve(NextResponse.json(
+                    { error: 'Handler completed without sending response' },
+                    { status: 500 }
+                  ))
+                }
+              })
+              .catch((err: any) => {
+                if (!resolved) {
+                  resolved = true
+                  console.error('Handler promise rejected:', err)
+                  if (err instanceof Error) {
+                    console.error('Error stack:', err.stack)
+                  }
+                  resolve(NextResponse.json(
+                    { error: 'Internal server error processing request', details: err instanceof Error ? err.message : String(err) },
+                    { status: 500 }
+                  ))
+                }
+              })
           }
         } catch (error) {
           if (!resolved) {
             resolved = true
             console.error('Error calling handler:', error instanceof Error ? error.message : String(error))
+            if (error instanceof Error) {
+              console.error('Error stack:', error.stack)
+            }
             resolve(NextResponse.json(
-              { error: 'Internal server error processing request' },
+              { error: 'Internal server error processing request', details: error instanceof Error ? error.message : String(error) },
               { status: 500 }
             ))
           }
