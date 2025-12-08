@@ -28,7 +28,12 @@ export async function GET(request: Request) {
         },
       })
     } catch (e) {
-      return new NextResponse('Admin interface not built. Run: npm run dev', {
+      // Better error message for debugging
+      const errorMsg = e instanceof Error ? e.message : String(e)
+      console.error('Failed to load admin interface:', errorMsg)
+      console.error('Admin path:', adminPath)
+      console.error('Current working directory:', process.cwd())
+      return new NextResponse(`Admin interface not found. Path: ${adminPath}, Error: ${errorMsg}`, {
         status: 404,
       })
     }
@@ -45,7 +50,10 @@ export async function GET(request: Request) {
         },
       })
     } catch (e) {
-      return new NextResponse('Admin interface not built. Run: npm run dev', {
+      const errorMsg = e instanceof Error ? e.message : String(e)
+      console.error('Failed to load admin interface:', errorMsg)
+      console.error('Admin path:', adminPath)
+      return new NextResponse(`Admin interface not found. Path: ${adminPath}, Error: ${errorMsg}`, {
         status: 404,
       })
     }
@@ -71,7 +79,10 @@ export async function GET(request: Request) {
       })
       return response
     } catch (e) {
-      return new NextResponse('Admin interface not built. Run: npm run dev', {
+      const errorMsg = e instanceof Error ? e.message : String(e)
+      console.error('Failed to load admin interface:', errorMsg)
+      console.error('Admin path:', adminPath)
+      return new NextResponse(`Admin interface not found. Path: ${adminPath}, Error: ${errorMsg}`, {
         status: 404,
       })
     }

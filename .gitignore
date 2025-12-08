@@ -44,4 +44,5 @@ next-env.d.ts
 # Only ignore other generated files
 tina/__generated__/*
 !tina/__generated__/databaseClient.*
-public/admin/
+# Admin interface is built during deployment - don't ignore it
+# public/admin/ is needed in production
