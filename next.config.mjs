@@ -13,35 +13,7 @@ const nextConfig = {
             ['glass-js/swc', {}],
         ],
     },
-    async rewrites() {
-        return [
-            {
-                source: '/admin',
-                destination: '/admin',
-            },
-            {
-                source: '/admin/',
-                destination: '/admin',
-            },
-        ]
-    },
-    async headers() {
-        return [
-            {
-                source: '/admin/config.yml',
-                headers: [
-                    {
-                        key: 'Access-Control-Allow-Origin',
-                        value: '*',
-                    },
-                    {
-                        key: 'Access-Control-Allow-Methods',
-                        value: 'GET, OPTIONS',
-                    },
-                ],
-            },
-        ]
-    },
+    // Removed admin rewrite - now handled by route handler for password protection
 }
 
 // MDX configuration for @next/mdx (used for non-blog MDX files)

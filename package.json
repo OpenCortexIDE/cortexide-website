@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "dev": "next dev -p 3000",
-    "build": "next build",
+    "dev": "tinacms dev -c \"next dev -p 3000\"",
+    "build": "tinacms build && next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -18,6 +18,9 @@
     "@supabase/supabase-js": "^2.45.1",
     "@tailwindcss/typography": "^0.5.15",
     "@tanstack/react-query": "^5.74.3",
+    "@tinacms/auth": "^1.1.0",
+    "@tinacms/cli": "^2.0.2",
+    "@tinacms/datalayer": "^2.0.1",
     "@types/mdx": "^2.0.13",
     "@types/react-syntax-highlighter": "^15.5.13",
     "class-variance-authority": "^0.7.1",
@@ -36,6 +39,8 @@
     "posthog-js": "^1.161.3",
     "react": "^18.3.1",
     "react-diff-viewer-continued": "^3.4.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.3.1",
     "react-github-btn": "^1.4.0",
     "react-icons": "^5.2.1",
@@ -47,6 +52,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.168.0",
+    "tinacms": "^3.0.2",
     "vanta": "^0.5.24",
     "zod": "^4.1.13"
   },
