@@ -14,6 +14,17 @@ const nextConfig = {
         ],
     },
     // Removed admin rewrite - now handled by route handler for password protection
+    webpack: (config, { isServer }) => {
+        if (isServer) {
+            // Ignore TinaCMS generated files during webpack analysis
+            // They will be available at runtime after tinacms build runs
+            config.externals = config.externals || []
+            config.externals.push({
+                '../../../../../tina/__generated__/databaseClient': 'commonjs ../../../../../tina/__generated__/databaseClient',
+            })
+        }
+        return config
+    },
 }
 
 // MDX configuration for @next/mdx (used for non-blog MDX files)
