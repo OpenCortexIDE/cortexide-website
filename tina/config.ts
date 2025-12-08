@@ -8,10 +8,8 @@ const branch =
 
 export default defineConfig({
   branch,
-  // No cloud credentials needed - using local authentication only
-  // This works for open source projects without requiring secrets
-  // Local auth works in both development and production
-  // Don't set clientId or token - leave them undefined for local-only mode
+  // Self-hosted mode - no cloud credentials needed
+  // Uses local database in development, GitHub provider in production
   contentApiUrlOverride: '/api/tina/gql',
   build: {
     outputFolder: 'admin',
