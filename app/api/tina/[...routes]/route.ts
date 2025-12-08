@@ -70,7 +70,6 @@ export async function GET(request: NextRequest) {
   
   try {
     const h = getHandler()
-    const res = new NextResponse()
     
     // Convert Next.js request to Node.js format for TinaNodeBackend
     const nodeReq = {
@@ -81,43 +80,81 @@ export async function GET(request: NextRequest) {
     } as any
     
     // Create a promise that resolves when the handler calls res methods
-    return new Promise<NextResponse>((resolve) => {
-      let statusCode = 200
-      const headers: Record<string, string> = {}
-      
-      const nodeRes = {
-        status(code: number) {
-          statusCode = code
-          return nodeRes
-        },
-        json(data: any) {
-          resolve(NextResponse.json(data, { status: statusCode, headers }))
-          return nodeRes
-        },
-        send(data: any) {
-          resolve(new NextResponse(data, { status: statusCode, headers }))
-          return nodeRes
-        },
-        setHeader(name: string, value: string) {
-          headers[name] = value
-          return nodeRes
-        },
-        end() {
-          resolve(new NextResponse(null, { status: statusCode, headers }))
-          return nodeRes
-        },
-      } as any
-      
-      try {
-        h(nodeReq, nodeRes)
-      } catch (error) {
-        console.error('Error calling handler:', error instanceof Error ? error.message : String(error))
-        resolve(NextResponse.json(
-          { error: 'Internal server error processing request' },
-          { status: 500 }
-        ))
-      }
-    })
+    return Promise.race([
+      new Promise<NextResponse>((resolve) => {
+        let statusCode = 200
+        const headers: Record<string, string> = {}
+        let resolved = false
+        
+        const nodeRes = {
+          status(code: number) {
+            statusCode = code
+            return nodeRes
+          },
+          json(data: any) {
+            if (!resolved) {
+              resolved = true
+              resolve(NextResponse.json(data, { status: statusCode, headers }))
+            }
+            return nodeRes
+          },
+          send(data: any) {
+            if (!resolved) {
+              resolved = true
+              resolve(new NextResponse(data, { status: statusCode, headers }))
+            }
+            return nodeRes
+          },
+          setHeader(name: string, value: string) {
+            headers[name] = value
+            return nodeRes
+          },
+          end() {
+            if (!resolved) {
+              resolved = true
+              resolve(new NextResponse(null, { status: statusCode, headers }))
+            }
+            return nodeRes
+          },
+        } as any
+        
+        try {
+          const result = h(nodeReq, nodeRes)
+          // If handler returns a promise, wait for it
+          if (result && typeof result.then === 'function') {
+            result.catch((err: any) => {
+              if (!resolved) {
+                resolved = true
+                console.error('Handler promise rejected:', err)
+                resolve(NextResponse.json(
+                  { error: 'Internal server error processing request' },
+                  { status: 500 }
+                ))
+              }
+            })
+          }
+        } catch (error) {
+          if (!resolved) {
+            resolved = true
+            console.error('Error calling handler:', error instanceof Error ? error.message : String(error))
+            resolve(NextResponse.json(
+              { error: 'Internal server error processing request' },
+              { status: 500 }
+            ))
+          }
+        }
+      }),
+      // Timeout after 10 seconds (Vercel's default timeout)
+      new Promise<NextResponse>((resolve) => {
+        setTimeout(() => {
+          console.error('GET handler timeout after 10 seconds - handler may not be calling response methods')
+          resolve(NextResponse.json(
+            { error: 'Request timeout - handler did not respond' },
+            { status: 504 }
+          ))
+        }, 10000)
+      })
+    ])
   } catch (error) {
     console.error('Error in GET handler:', error instanceof Error ? error.message : String(error))
     if (error instanceof Error) {
@@ -152,43 +189,81 @@ export async function POST(request: NextRequest) {
     } as any
     
     // Create a promise that resolves when the handler calls res methods
-    return new Promise<NextResponse>((resolve) => {
-      let statusCode = 200
-      const headers: Record<string, string> = {}
-      
-      const nodeRes = {
-        status(code: number) {
-          statusCode = code
-          return nodeRes
-        },
-        json(data: any) {
-          resolve(NextResponse.json(data, { status: statusCode, headers }))
-          return nodeRes
-        },
-        send(data: any) {
-          resolve(new NextResponse(data, { status: statusCode, headers }))
-          return nodeRes
-        },
-        setHeader(name: string, value: string) {
-          headers[name] = value
-          return nodeRes
-        },
-        end() {
-          resolve(new NextResponse(null, { status: statusCode, headers }))
-          return nodeRes
-        },
-      } as any
-      
-      try {
-        h(nodeReq, nodeRes)
-      } catch (error) {
-        console.error('Error calling handler:', error instanceof Error ? error.message : String(error))
-        resolve(NextResponse.json(
-          { error: 'Internal server error processing request' },
-          { status: 500 }
-        ))
-      }
-    })
+    return Promise.race([
+      new Promise<NextResponse>((resolve) => {
+        let statusCode = 200
+        const headers: Record<string, string> = {}
+        let resolved = false
+        
+        const nodeRes = {
+          status(code: number) {
+            statusCode = code
+            return nodeRes
+          },
+          json(data: any) {
+            if (!resolved) {
+              resolved = true
+              resolve(NextResponse.json(data, { status: statusCode, headers }))
+            }
+            return nodeRes
+          },
+          send(data: any) {
+            if (!resolved) {
+              resolved = true
+              resolve(new NextResponse(data, { status: statusCode, headers }))
+            }
+            return nodeRes
+          },
+          setHeader(name: string, value: string) {
+            headers[name] = value
+            return nodeRes
+          },
+          end() {
+            if (!resolved) {
+              resolved = true
+              resolve(new NextResponse(null, { status: statusCode, headers }))
+            }
+            return nodeRes
+          },
+        } as any
+        
+        try {
+          const result = h(nodeReq, nodeRes)
+          // If handler returns a promise, wait for it
+          if (result && typeof result.then === 'function') {
+            result.catch((err: any) => {
+              if (!resolved) {
+                resolved = true
+                console.error('Handler promise rejected:', err)
+                resolve(NextResponse.json(
+                  { error: 'Internal server error processing request' },
+                  { status: 500 }
+                ))
+              }
+            })
+          }
+        } catch (error) {
+          if (!resolved) {
+            resolved = true
+            console.error('Error calling handler:', error instanceof Error ? error.message : String(error))
+            resolve(NextResponse.json(
+              { error: 'Internal server error processing request' },
+              { status: 500 }
+            ))
+          }
+        }
+      }),
+      // Timeout after 10 seconds (Vercel's default timeout)
+      new Promise<NextResponse>((resolve) => {
+        setTimeout(() => {
+          console.error('POST handler timeout after 10 seconds - handler may not be calling response methods')
+          resolve(NextResponse.json(
+            { error: 'Request timeout - handler did not respond' },
+            { status: 504 }
+          ))
+        }, 10000)
+      })
+    ])
   } catch (error) {
     console.error('Error in POST handler:', error instanceof Error ? error.message : String(error))
     if (error instanceof Error) {
