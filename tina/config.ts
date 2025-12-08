@@ -8,8 +8,9 @@ const branch =
 
 export default defineConfig({
   branch,
-  // Self-hosted mode - no cloud credentials needed
-  // Uses local database in development, GitHub provider in production
+  // Tina Cloud mode - requires NEXT_PUBLIC_TINA_CLIENT_ID and TINA_TOKEN
+  clientId: process.env.NEXT_PUBLIC_TINA_CLIENT_ID,
+  token: process.env.TINA_TOKEN,
   contentApiUrlOverride: '/api/tina/gql',
   build: {
     outputFolder: 'admin',
