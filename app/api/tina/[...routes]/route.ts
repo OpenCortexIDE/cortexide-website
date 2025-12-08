@@ -60,44 +60,6 @@ function isAuthenticated(request: NextRequest): boolean {
   return true
 }
 
-// Helper to convert Next.js request to Node.js format
-function createNodeRequest(request: NextRequest, body?: string) {
-  return {
-    url: request.url,
-    method: request.method,
-    headers: Object.fromEntries(request.headers.entries()),
-    body: body,
-    query: Object.fromEntries(new URL(request.url).searchParams.entries()),
-  } as any
-}
-
-// Helper to create a Node.js-style response that resolves to NextResponse
-function createNodeResponse(resolve: (response: NextResponse) => void) {
-  let statusCode = 200
-  const headers: Record<string, string> = {}
-  
-  return {
-    status(code: number) {
-      statusCode = code
-      return this
-    },
-    json(data: any) {
-      resolve(NextResponse.json(data, { status: statusCode, headers }))
-      return this
-    },
-    send(data: any) {
-      resolve(new NextResponse(data, { status: statusCode, headers }))
-      return this
-    },
-    setHeader(name: string, value: string) {
-      headers[name] = value
-    },
-    end() {
-      resolve(new NextResponse(null, { status: statusCode, headers }))
-    },
-  } as any
-}
-
 export async function GET(request: NextRequest) {
   if (!isAuthenticated(request)) {
     return NextResponse.json(
@@ -108,32 +70,9 @@ export async function GET(request: NextRequest) {
   
   try {
     const h = getHandler()
-    
-    // Add timeout to prevent hanging requests
-    return Promise.race([
-      new Promise<NextResponse>((resolve) => {
-        const req = createNodeRequest(request)
-        const res = createNodeResponse(resolve)
-        try {
-          h(req, res)
-        } catch (error) {
-          console.error('Error calling TinaCMS handler:', error instanceof Error ? error.message : String(error))
-          resolve(NextResponse.json(
-            { error: 'Internal server error processing TinaCMS request' },
-            { status: 500 }
-          ))
-        }
-      }),
-      new Promise<NextResponse>((resolve) => {
-        setTimeout(() => {
-          console.error('TinaCMS handler timeout after 30 seconds')
-          resolve(NextResponse.json(
-            { error: 'Request timeout' },
-            { status: 504 }
-          ))
-        }, 30000) // 30 second timeout
-      })
-    ])
+    const res = new NextResponse()
+    await h(request, res)
+    return res
   } catch (error) {
     console.error('Error in GET handler:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
@@ -153,33 +92,9 @@ export async function POST(request: NextRequest) {
   
   try {
     const h = getHandler()
-    const body = await request.text()
-    
-    // Add timeout to prevent hanging requests
-    return Promise.race([
-      new Promise<NextResponse>((resolve) => {
-        const req = createNodeRequest(request, body)
-        const res = createNodeResponse(resolve)
-        try {
-          h(req, res)
-        } catch (error) {
-          console.error('Error calling TinaCMS handler:', error instanceof Error ? error.message : String(error))
-          resolve(NextResponse.json(
-            { error: 'Internal server error processing TinaCMS request' },
-            { status: 500 }
-          ))
-        }
-      }),
-      new Promise<NextResponse>((resolve) => {
-        setTimeout(() => {
-          console.error('TinaCMS handler timeout after 30 seconds')
-          resolve(NextResponse.json(
-            { error: 'Request timeout' },
-            { status: 504 }
-          ))
-        }, 30000) // 30 second timeout
-      })
-    ])
+    const res = new NextResponse()
+    await h(request, res)
+    return res
   } catch (error) {
     console.error('Error in POST handler:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
