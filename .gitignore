@@ -40,5 +40,8 @@ yarn-error.log*
 next-env.d.ts
 
 # TinaCMS
-tina/__generated__/
+# Note: tina/__generated__/databaseClient.ts is needed in production
+# Only ignore other generated files
+tina/__generated__/*
+!tina/__generated__/databaseClient.*
 public/admin/
