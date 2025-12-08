@@ -83,18 +83,21 @@ export async function GET(request: NextRequest) {
   
   try {
     const h = getHandler()
-    
-    // Convert Next.js request to Node.js format for TinaNodeBackend
-    const nodeReq = {
-      url: request.url,
-      method: request.method,
-      headers: Object.fromEntries(request.headers.entries()),
-      query: Object.fromEntries(new URL(request.url).searchParams.entries()),
-    } as any
-    
-    // Create a promise that resolves when the handler calls res methods
-    return Promise.race([
-      new Promise<NextResponse>((resolve) => {
+    // Try the simple approach first - pass NextResponse class directly
+    try {
+      return await h(request, NextResponse)
+    } catch (simpleError) {
+      console.log('Simple handler call failed, trying with conversion:', simpleError instanceof Error ? simpleError.message : String(simpleError))
+      
+      // Fallback to conversion approach
+      const nodeReq = {
+        url: request.url,
+        method: request.method,
+        headers: Object.fromEntries(request.headers.entries()),
+        query: Object.fromEntries(new URL(request.url).searchParams.entries()),
+      } as any
+      
+      return new Promise<NextResponse>((resolve) => {
         let statusCode = 200
         const headers: Record<string, string> = {}
         let resolved = false
@@ -132,68 +135,31 @@ export async function GET(request: NextRequest) {
         } as any
         
         try {
-          console.log('Calling TinaCMS handler with:', {
-            method: nodeReq.method,
-            url: nodeReq.url,
-            hasBody: !!nodeReq.body,
-            headers: Object.keys(nodeReq.headers),
-          })
-          
           const result = h(nodeReq, nodeRes)
-          
-          // If handler returns a promise, wait for it
           if (result && typeof result.then === 'function') {
-            result
-              .then(() => {
-                // Handler completed but didn't call response methods
-                if (!resolved) {
-                  console.warn('Handler promise resolved but no response was sent')
-                  resolved = true
-                  resolve(NextResponse.json(
-                    { error: 'Handler completed without sending response' },
-                    { status: 500 }
-                  ))
-                }
-              })
-              .catch((err: any) => {
-                if (!resolved) {
-                  resolved = true
-                  console.error('Handler promise rejected:', err)
-                  if (err instanceof Error) {
-                    console.error('Error stack:', err.stack)
-                  }
-                  resolve(NextResponse.json(
-                    { error: 'Internal server error processing request', details: err instanceof Error ? err.message : String(err) },
-                    { status: 500 }
-                  ))
-                }
-              })
+            result.catch((err: any) => {
+              if (!resolved) {
+                resolved = true
+                console.error('Handler promise rejected:', err)
+                resolve(NextResponse.json(
+                  { error: 'Internal server error', details: err instanceof Error ? err.message : String(err) },
+                  { status: 500 }
+                ))
+              }
+            })
           }
         } catch (error) {
           if (!resolved) {
             resolved = true
             console.error('Error calling handler:', error instanceof Error ? error.message : String(error))
-            if (error instanceof Error) {
-              console.error('Error stack:', error.stack)
-            }
             resolve(NextResponse.json(
-              { error: 'Internal server error processing request', details: error instanceof Error ? error.message : String(error) },
+              { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
               { status: 500 }
             ))
           }
         }
-      }),
-      // Timeout after 10 seconds (Vercel's default timeout)
-      new Promise<NextResponse>((resolve) => {
-        setTimeout(() => {
-          console.error('GET handler timeout after 10 seconds - handler may not be calling response methods')
-          resolve(NextResponse.json(
-            { error: 'Request timeout - handler did not respond' },
-            { status: 504 }
-          ))
-        }, 10000)
       })
-    ])
+    }
   } catch (error) {
     console.error('Error in GET handler:', error instanceof Error ? error.message : String(error))
     if (error instanceof Error) {
@@ -216,20 +182,23 @@ export async function POST(request: NextRequest) {
   
   try {
     const h = getHandler()
-    const body = await request.text()
-    
-    // Convert Next.js request to Node.js format for TinaNodeBackend
-    const nodeReq = {
-      url: request.url,
-      method: request.method,
-      headers: Object.fromEntries(request.headers.entries()),
-      body: body,
-      query: Object.fromEntries(new URL(request.url).searchParams.entries()),
-    } as any
-    
-    // Create a promise that resolves when the handler calls res methods
-    return Promise.race([
-      new Promise<NextResponse>((resolve) => {
+    // Try the simple approach first - pass NextResponse class directly
+    try {
+      return await h(request, NextResponse)
+    } catch (simpleError) {
+      console.log('Simple handler call failed, trying with conversion:', simpleError instanceof Error ? simpleError.message : String(simpleError))
+      
+      // Fallback to conversion approach
+      const body = await request.text()
+      const nodeReq = {
+        url: request.url,
+        method: request.method,
+        headers: Object.fromEntries(request.headers.entries()),
+        body: body,
+        query: Object.fromEntries(new URL(request.url).searchParams.entries()),
+      } as any
+      
+      return new Promise<NextResponse>((resolve) => {
         let statusCode = 200
         const headers: Record<string, string> = {}
         let resolved = false
@@ -267,68 +236,31 @@ export async function POST(request: NextRequest) {
         } as any
         
         try {
-          console.log('Calling TinaCMS handler with:', {
-            method: nodeReq.method,
-            url: nodeReq.url,
-            hasBody: !!nodeReq.body,
-            headers: Object.keys(nodeReq.headers),
-          })
-          
           const result = h(nodeReq, nodeRes)
-          
-          // If handler returns a promise, wait for it
           if (result && typeof result.then === 'function') {
-            result
-              .then(() => {
-                // Handler completed but didn't call response methods
-                if (!resolved) {
-                  console.warn('Handler promise resolved but no response was sent')
-                  resolved = true
-                  resolve(NextResponse.json(
-                    { error: 'Handler completed without sending response' },
-                    { status: 500 }
-                  ))
-                }
-              })
-              .catch((err: any) => {
-                if (!resolved) {
-                  resolved = true
-                  console.error('Handler promise rejected:', err)
-                  if (err instanceof Error) {
-                    console.error('Error stack:', err.stack)
-                  }
-                  resolve(NextResponse.json(
-                    { error: 'Internal server error processing request', details: err instanceof Error ? err.message : String(err) },
-                    { status: 500 }
-                  ))
-                }
-              })
+            result.catch((err: any) => {
+              if (!resolved) {
+                resolved = true
+                console.error('Handler promise rejected:', err)
+                resolve(NextResponse.json(
+                  { error: 'Internal server error', details: err instanceof Error ? err.message : String(err) },
+                  { status: 500 }
+                ))
+              }
+            })
           }
         } catch (error) {
           if (!resolved) {
             resolved = true
             console.error('Error calling handler:', error instanceof Error ? error.message : String(error))
-            if (error instanceof Error) {
-              console.error('Error stack:', error.stack)
-            }
             resolve(NextResponse.json(
-              { error: 'Internal server error processing request', details: error instanceof Error ? error.message : String(error) },
+              { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
               { status: 500 }
             ))
           }
         }
-      }),
-      // Timeout after 10 seconds (Vercel's default timeout)
-      new Promise<NextResponse>((resolve) => {
-        setTimeout(() => {
-          console.error('POST handler timeout after 10 seconds - handler may not be calling response methods')
-          resolve(NextResponse.json(
-            { error: 'Request timeout - handler did not respond' },
-            { status: 504 }
-          ))
-        }, 10000)
       })
-    ])
+    }
   } catch (error) {
     console.error('Error in POST handler:', error instanceof Error ? error.message : String(error))
     if (error instanceof Error) {
