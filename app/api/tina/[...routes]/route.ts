@@ -23,7 +23,7 @@ async function getHandler() {
       databaseClient = requireFunc(dbPath).default
     } catch (e) {
       console.error('TinaCMS database client not found. Make sure to run "tinacms build" before building.')
-      console.error('Error:', e.message)
+      console.error('Error:', e instanceof Error ? e.message : String(e))
       return null
     }
   }
