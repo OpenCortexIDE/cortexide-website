@@ -6,19 +6,9 @@ import { join } from 'path'
 // Check if we're using Tina Cloud or local mode
 const isTinaCloud = !!process.env.NEXT_PUBLIC_TINA_CLIENT_ID && !!process.env.TINA_TOKEN
 
-// Try to import database client statically (will be available at build time)
+// Lazy load database client (only needed for local mode)
 let databaseClient: any = null
 let handler: any = null
-
-// Try static import first (works if file is available at build time)
-try {
-  // @ts-ignore - This file is generated and may not exist during type checking
-  const dbModule = require('../../../../tina/__generated__/databaseClient')
-  databaseClient = dbModule.databaseClient || dbModule.default
-} catch (e) {
-  // Static import failed, will try dynamic import in getHandler
-  console.log('Static import of databaseClient failed, will try dynamic import')
-}
 
 async function getHandler() {
   if (handler) {
