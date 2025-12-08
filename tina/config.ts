@@ -11,8 +11,7 @@ export default defineConfig({
   // No cloud credentials needed - using local authentication only
   // This works for open source projects without requiring secrets
   // Local auth works in both development and production
-  clientId: null,
-  token: null,
+  // Don't set clientId or token - leave them undefined for local-only mode
   contentApiUrlOverride: '/api/tina/gql',
   build: {
     outputFolder: 'admin',
