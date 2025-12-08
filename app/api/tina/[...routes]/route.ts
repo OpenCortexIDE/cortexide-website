@@ -34,15 +34,30 @@ async function getHandler() {
     ]
     
     let loaded = false
+    let lastError: any = null
+    
     for (const dbPath of possiblePaths) {
       try {
-        if (path.isAbsolute(dbPath) && !fs.existsSync(dbPath)) {
-          continue
+        // Check if file exists for absolute paths
+        if (path.isAbsolute(dbPath)) {
+          const exists = fs.existsSync(dbPath) || fs.existsSync(dbPath + '.js') || fs.existsSync(dbPath + '.ts')
+          if (!exists) {
+            continue
+          }
         }
-        databaseClient = requireFunc(dbPath).default
-        loaded = true
-        break
+        
+        // Try to require the module
+        const module = requireFunc(dbPath)
+        // The databaseClient is a named export, not default
+        databaseClient = module.databaseClient || module.default?.databaseClient || module.default
+        if (databaseClient) {
+          loaded = true
+          console.log('Successfully loaded database client from:', dbPath)
+          break
+        }
       } catch (err) {
+        lastError = err
+        // Continue to next path
         continue
       }
     }
@@ -50,6 +65,21 @@ async function getHandler() {
     if (!loaded) {
       console.error('TinaCMS database client not found. Tried paths:', possiblePaths)
       console.error('Current working directory:', process.cwd())
+      // Try to list files in the directory for debugging
+      try {
+        const genDir = path.join(process.cwd(), 'tina', '__generated__')
+        if (fs.existsSync(genDir)) {
+          const files = fs.readdirSync(genDir)
+          console.error('Files in tina/__generated__:', files)
+        } else {
+          console.error('Directory tina/__generated__ does not exist')
+        }
+      } catch (e) {
+        console.error('Could not list directory:', e instanceof Error ? e.message : String(e))
+      }
+      if (lastError) {
+        console.error('Last error:', lastError instanceof Error ? lastError.message : String(lastError))
+      }
       // Database client is required for both modes
       return null
     }
