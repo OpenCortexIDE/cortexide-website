@@ -107,13 +107,7 @@ export async function GET(request: NextRequest) {
   }
   
   try {
-    const h = await getHandler()
-    if (!h) {
-      return NextResponse.json(
-        { error: 'TinaCMS backend not initialized. Database client not found.' },
-        { status: 503 }
-      )
-    }
+    const h = getHandler()
     
     // Add timeout to prevent hanging requests
     return Promise.race([
