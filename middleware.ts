@@ -4,8 +4,10 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   
-  // Apply CSP headers for admin routes (including static files)
-  if (pathname.startsWith('/admin')) {
+  // Apply CSP headers for admin routes (excluding /admin page which sets its own CSP)
+  // The /admin route handler sets its own CSP with 'unsafe-eval' for Decap CMS
+  // We only set CSP here for other admin routes like /admin/config.yml
+  if (pathname.startsWith('/admin') && pathname !== '/admin' && pathname !== '/admin/') {
     const response = NextResponse.next()
     
     // Remove any existing CSP header first (if present)

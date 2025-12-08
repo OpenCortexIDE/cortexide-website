@@ -1,5 +1,15 @@
 import { NextResponse } from 'next/server'
 
+/**
+ * Netlify CMS Configuration Route
+ * 
+ * This is the canonical source of truth for Netlify CMS configuration.
+ * It serves the config.yml dynamically, allowing environment variable injection
+ * (e.g., GITHUB_OAUTH_CLIENT_ID).
+ * 
+ * Note: A static file at public/admin/config.yml was removed to avoid conflicts
+ * with Next.js routing. This route handler is the only source for the config.
+ */
 const configYaml = `backend:
   name: github
   repo: OpenCortexIDE/cortexide-website

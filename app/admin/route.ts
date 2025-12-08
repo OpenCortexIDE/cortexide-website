@@ -7,23 +7,29 @@ export async function GET() {
   const adminHtmlPath = join(process.cwd(), 'public', 'admin', 'index.html')
   let adminHtml = readFileSync(adminHtmlPath, 'utf-8')
   
+  // CSP policy that allows Decap CMS to function properly
+  // 'unsafe-eval' is required for Decap CMS's dynamic code evaluation
+  const cspPolicy = "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://unpkg.com https://identity.netlify.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' https://api.github.com https://github.com https://unpkg.com https://identity.netlify.com; frame-src 'self' https://github.com; object-src 'none'; base-uri 'self'; form-action 'self';"
+  
   // Inject CSP meta tag directly into HTML as fallback
   // This ensures CSP is applied even if headers are overridden
-  const cspMeta = `<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://unpkg.com https://identity.netlify.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' https://api.github.com https://github.com https://unpkg.com https://identity.netlify.com; frame-src 'self' https://github.com; object-src 'none'; base-uri 'self'; form-action 'self';">`
+  const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${cspPolicy}">`
   
   // Insert CSP meta tag right after <head>
   adminHtml = adminHtml.replace('<head>', `<head>${cspMeta}`)
   
   // Return the HTML with proper content type and CSP header
-  // Set both header and meta tag to ensure CSP is applied
-  return new NextResponse(adminHtml, {
+  // Set both header and meta tag to ensure CSP is applied consistently
+  const response = new NextResponse(adminHtml, {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache',
       'Expires': '0',
-      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://unpkg.com https://identity.netlify.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' https://api.github.com https://github.com https://unpkg.com https://identity.netlify.com; frame-src 'self' https://github.com; object-src 'none'; base-uri 'self'; form-action 'self';",
+      'Content-Security-Policy': cspPolicy,
     },
   })
+  
+  return response
 }
 

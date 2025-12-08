@@ -27,9 +27,18 @@ export const metadata: Metadata = {
         siteName: 'CortexIDE',
         type: 'website',
         locale: 'en_US',
+        images: [
+            {
+                url: `${baseUrl}/og?title=${encodeURIComponent('CortexIDE')}&description=${encodeURIComponent('CortexIDE is an open source Cursor alternative. Full privacy. Fully-featured.')}`,
+                width: 1200,
+                height: 630,
+                alt: 'CortexIDE Logo',
+            },
+        ],
     },
     twitter: {
         card: 'summary_large_image',
+        images: [`${baseUrl}/og?title=${encodeURIComponent('CortexIDE')}&description=${encodeURIComponent('CortexIDE is an open source Cursor alternative. Full privacy. Fully-featured.')}`],
     },
 };
 

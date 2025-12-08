@@ -27,6 +27,13 @@ export default function Page() {
   let allBlogs = readPublicBlogPosts()
     .sort((a, b) => new Date(a.metadata.publishedAt) > new Date(b.metadata.publishedAt) ? -1 : 1)
 
+  // TODO: Add pagination support for blog posts list
+  // Consider implementing:
+  // - Client-side pagination with page size (e.g., 10 posts per page)
+  // - URL-based pagination (/blog?page=2) or route-based (/blog/page/2)
+  // - "Load more" button for infinite scroll alternative
+  // - Ensure pagination works with SSG/ISR caching strategy
+
   return (
     <main className="min-h-screen">
       <section className='mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20 max-w-4xl w-full'>
