@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { TinaNodeBackend, LocalBackendAuthProvider } from '@tinacms/datalayer'
+import { TinaCloudBackendAuthProvider } from '@tinacms/auth'
 import { join } from 'path'
 
 // Check if we're using Tina Cloud or local mode
@@ -49,57 +50,18 @@ async function getHandler() {
     if (!loaded) {
       console.error('TinaCMS database client not found. Tried paths:', possiblePaths)
       console.error('Current working directory:', process.cwd())
-      // For Tina Cloud, we might be able to continue, but it's not ideal
-      if (isTinaCloud) {
-        console.warn('Tina Cloud mode: Continuing without database client (may cause issues)')
-      } else {
-        return null
-      }
-    }
-  }
-
-  // Local mode - database client is required
-  if (!databaseClient) {
-    try {
-      const requireFunc = eval('require')
-      const fs = require('fs')
-      const path = require('path')
-      
-      const possiblePaths = [
-        path.join(process.cwd(), 'tina', '__generated__', 'databaseClient.js'),
-        path.join(process.cwd(), 'tina', '__generated__', 'databaseClient.ts'),
-        path.join(process.cwd(), 'tina', '__generated__', 'databaseClient'),
-        '../../../../../tina/__generated__/databaseClient.js',
-        '../../../../../tina/__generated__/databaseClient.ts',
-        '../../../../../tina/__generated__/databaseClient',
-      ]
-      
-      let loaded = false
-      for (const dbPath of possiblePaths) {
-        try {
-          if (path.isAbsolute(dbPath) && !fs.existsSync(dbPath)) {
-            continue
-          }
-          databaseClient = requireFunc(dbPath).default
-          loaded = true
-          break
-        } catch (err) {
-          continue
-        }
-      }
-      
-      if (!loaded) {
-        throw new Error(`Could not load database client from any of: ${possiblePaths.join(', ')}`)
-      }
-    } catch (e) {
-      console.error('TinaCMS database client not found. Make sure to run "tinacms build" before building.')
-      console.error('Error:', e instanceof Error ? e.message : String(e))
+      // Database client is required for both modes
       return null
     }
   }
 
+  // Use appropriate auth provider based on mode
+  const authProvider = isTinaCloud
+    ? TinaCloudBackendAuthProvider()
+    : LocalBackendAuthProvider()
+
   handler = TinaNodeBackend({
-    authProvider: LocalBackendAuthProvider(),
+    authProvider,
     databaseClient,
   })
 
@@ -108,10 +70,16 @@ async function getHandler() {
 
 /**
  * Check if request is authenticated
- * In development, allow access without password
- * In production, require ADMIN_PASSWORD via cookie
+ * For Tina Cloud, authentication is handled by TinaCloudBackendAuthProvider
+ * For local mode, we can optionally add additional password protection
  */
 function isAuthenticated(request: NextRequest): boolean {
+  // For Tina Cloud, let the auth provider handle authentication
+  if (isTinaCloud) {
+    return true
+  }
+
+  // For local mode, optionally check for admin password
   const adminPassword = process.env.ADMIN_PASSWORD
   
   // If no password is set, allow access (development mode)
@@ -127,7 +95,6 @@ function isAuthenticated(request: NextRequest): boolean {
 
   // Verify session token is valid (simple check - in production you'd want more robust session management)
   // For now, we'll accept any session cookie if password is set
-  // In a more secure setup, you'd verify the session token against a database
   return true
 }
 
