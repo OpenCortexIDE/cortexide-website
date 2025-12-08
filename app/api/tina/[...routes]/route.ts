@@ -187,19 +187,47 @@ export async function GET(request: NextRequest) {
     )
   }
   
-  const h = await getHandler()
-  if (!h) {
+  try {
+    const h = await getHandler()
+    if (!h) {
+      return NextResponse.json(
+        { error: 'TinaCMS backend not initialized. Database client not found.' },
+        { status: 503 }
+      )
+    }
+    
+    // Add timeout to prevent hanging requests
+    return Promise.race([
+      new Promise<NextResponse>((resolve) => {
+        const req = createNodeRequest(request)
+        const res = createNodeResponse(resolve)
+        try {
+          h(req, res)
+        } catch (error) {
+          console.error('Error calling TinaCMS handler:', error instanceof Error ? error.message : String(error))
+          resolve(NextResponse.json(
+            { error: 'Internal server error processing TinaCMS request' },
+            { status: 500 }
+          ))
+        }
+      }),
+      new Promise<NextResponse>((resolve) => {
+        setTimeout(() => {
+          console.error('TinaCMS handler timeout after 30 seconds')
+          resolve(NextResponse.json(
+            { error: 'Request timeout' },
+            { status: 504 }
+          ))
+        }, 30000) // 30 second timeout
+      })
+    ])
+  } catch (error) {
+    console.error('Error in GET handler:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'TinaCMS backend not initialized. Database client not found.' },
-      { status: 503 }
+      { error: 'Internal server error' },
+      { status: 500 }
     )
   }
-  
-  return new Promise<NextResponse>((resolve) => {
-    const req = createNodeRequest(request)
-    const res = createNodeResponse(resolve)
-    h(req, res)
-  })
 }
 
 export async function POST(request: NextRequest) {
@@ -210,19 +238,47 @@ export async function POST(request: NextRequest) {
     )
   }
   
-  const h = await getHandler()
-  if (!h) {
+  try {
+    const h = await getHandler()
+    if (!h) {
+      return NextResponse.json(
+        { error: 'TinaCMS backend not initialized. Database client not found.' },
+        { status: 503 }
+      )
+    }
+    
+    const body = await request.text()
+    
+    // Add timeout to prevent hanging requests
+    return Promise.race([
+      new Promise<NextResponse>((resolve) => {
+        const req = createNodeRequest(request, body)
+        const res = createNodeResponse(resolve)
+        try {
+          h(req, res)
+        } catch (error) {
+          console.error('Error calling TinaCMS handler:', error instanceof Error ? error.message : String(error))
+          resolve(NextResponse.json(
+            { error: 'Internal server error processing TinaCMS request' },
+            { status: 500 }
+          ))
+        }
+      }),
+      new Promise<NextResponse>((resolve) => {
+        setTimeout(() => {
+          console.error('TinaCMS handler timeout after 30 seconds')
+          resolve(NextResponse.json(
+            { error: 'Request timeout' },
+            { status: 504 }
+          ))
+        }, 30000) // 30 second timeout
+      })
+    ])
+  } catch (error) {
+    console.error('Error in POST handler:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: 'TinaCMS backend not initialized. Database client not found.' },
-      { status: 503 }
+      { error: 'Internal server error' },
+      { status: 500 }
     )
   }
-  
-  const body = await request.text()
-  
-  return new Promise<NextResponse>((resolve) => {
-    const req = createNodeRequest(request, body)
-    const res = createNodeResponse(resolve)
-    h(req, res)
-  })
 }
