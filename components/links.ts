@@ -1,4 +1,4 @@
-export const discordLink = 'https://discord.gg/pb4z4vtb'
+export const discordLink = 'https://discord.gg/NFc3EKPany'
 export const xLink = 'https://x.com/cortexide'
 
 // export const contributeLink = 'https://github.com/OpenCortexIDE/cortexide/blob/main/HOW_TO_CONTRIBUTE.md'
