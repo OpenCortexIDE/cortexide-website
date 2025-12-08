@@ -47,14 +47,18 @@ export default defineConfig({
             name: 'publishedAt',
             label: 'Publish Date',
             required: true,
-            dateFormat: 'YYYY-MM-DD',
+            ui: {
+              dateFormat: 'YYYY-MM-DD',
+            },
           },
           {
             type: 'datetime',
             name: 'modifiedAt',
             label: 'Modified Date',
             required: false,
-            dateFormat: 'YYYY-MM-DD',
+            ui: {
+              dateFormat: 'YYYY-MM-DD',
+            },
           },
           {
             type: 'string',
