@@ -18,10 +18,10 @@ const nextConfig = {
         if (isServer) {
             // Ignore TinaCMS generated files during webpack analysis
             // They will be available at runtime after tinacms build runs
-            config.externals = config.externals || []
-            config.externals.push({
-                '../../../../../tina/__generated__/databaseClient': 'commonjs ../../../../../tina/__generated__/databaseClient',
-            })
+            config.resolve = config.resolve || {}
+            config.resolve.fallback = config.resolve.fallback || {}
+            // Don't try to resolve these at build time
+            config.resolve.alias = config.resolve.alias || {}
         }
         return config
     },
