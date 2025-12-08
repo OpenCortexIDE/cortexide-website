@@ -14,36 +14,48 @@ async function getHandler() {
     return handler
   }
 
-  // For Tina Cloud, we don't need a local database client
-  // Tina Cloud handles the database and authentication
-  if (isTinaCloud) {
-    // For Tina Cloud, we still need a minimal handler
-    // But we can use a simple proxy or skip the database client
-    try {
-      // Try to load database client for schema validation, but don't fail if it's not found
-      const requireFunc = eval('require')
+  // Load database client (required for both local and Tina Cloud modes)
+  // The database client is needed for schema validation and GraphQL operations
+  if (!databaseClient) {
+    const requireFunc = eval('require')
+    const fs = require('fs')
+    const path = require('path')
+    
+    const possiblePaths = [
+      // Try relative paths first (more reliable in serverless)
+      '../../../../../tina/__generated__/databaseClient.js',
+      '../../../../../tina/__generated__/databaseClient.ts',
+      '../../../../../tina/__generated__/databaseClient',
+      // Then try absolute paths
+      path.join(process.cwd(), 'tina', '__generated__', 'databaseClient.js'),
+      path.join(process.cwd(), 'tina', '__generated__', 'databaseClient.ts'),
+      path.join(process.cwd(), 'tina', '__generated__', 'databaseClient'),
+    ]
+    
+    let loaded = false
+    for (const dbPath of possiblePaths) {
       try {
-        databaseClient = requireFunc('../../../../../tina/__generated__/databaseClient.js').default
-      } catch {
-        try {
-          databaseClient = requireFunc('../../../../../tina/__generated__/databaseClient.ts').default
-        } catch {
-          // For Tina Cloud, database client is optional - Tina Cloud handles the data
-          databaseClient = null
+        if (path.isAbsolute(dbPath) && !fs.existsSync(dbPath)) {
+          continue
         }
+        databaseClient = requireFunc(dbPath).default
+        loaded = true
+        break
+      } catch (err) {
+        continue
       }
-    } catch (e) {
-      // For Tina Cloud mode, this is okay - continue without local database
-      databaseClient = null
     }
-
-    // Create handler with or without database client
-    handler = TinaNodeBackend({
-      authProvider: LocalBackendAuthProvider(),
-      databaseClient: databaseClient || undefined,
-    })
-
-    return handler
+    
+    if (!loaded) {
+      console.error('TinaCMS database client not found. Tried paths:', possiblePaths)
+      console.error('Current working directory:', process.cwd())
+      // For Tina Cloud, we might be able to continue, but it's not ideal
+      if (isTinaCloud) {
+        console.warn('Tina Cloud mode: Continuing without database client (may cause issues)')
+      } else {
+        return null
+      }
+    }
   }
 
   // Local mode - database client is required
