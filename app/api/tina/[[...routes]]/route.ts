@@ -73,6 +73,103 @@ function isAuthenticated(request: NextRequest): boolean {
   return true
 }
 
+/**
+ * Convert Next.js request to Node.js-style request and handle response
+ */
+async function handleRequest(request: NextRequest): Promise<NextResponse> {
+  const h = getHandler()
+  
+  // Convert Next.js request to Node.js-style request
+  const url = new URL(request.url)
+  const body = request.method === 'POST' ? await request.text() : undefined
+  
+  const nodeReq = {
+    url: request.url,
+    method: request.method,
+    headers: Object.fromEntries(request.headers.entries()),
+    body: body,
+    query: Object.fromEntries(url.searchParams.entries()),
+  } as any
+  
+  return new Promise<NextResponse>((resolve, reject) => {
+    let statusCode = 200
+    const headers: Record<string, string> = {}
+    let resolved = false
+    
+    const nodeRes = {
+      status(code: number) {
+        statusCode = code
+        return nodeRes
+      },
+      json(data: any) {
+        if (!resolved) {
+          resolved = true
+          resolve(NextResponse.json(data, { status: statusCode, headers }))
+        }
+        return nodeRes
+      },
+      send(data: any) {
+        if (!resolved) {
+          resolved = true
+          resolve(new NextResponse(data, { status: statusCode, headers }))
+        }
+        return nodeRes
+      },
+      setHeader(name: string, value: string) {
+        headers[name] = value
+        return nodeRes
+      },
+      end() {
+        if (!resolved) {
+          resolved = true
+          resolve(new NextResponse(null, { status: statusCode, headers }))
+        }
+        return nodeRes
+      },
+    } as any
+    
+    try {
+      const result = h(nodeReq, nodeRes)
+      if (result && typeof result.then === 'function') {
+        result.then(() => {
+          // Handler resolved via nodeRes methods
+          if (!resolved) {
+            resolved = true
+            resolve(new NextResponse(null, { status: statusCode, headers }))
+          }
+        }).catch((err: any) => {
+          if (!resolved) {
+            resolved = true
+            console.error('Handler promise rejected:', err)
+            reject(err)
+          }
+        })
+      }
+      
+      // Timeout fallback - if handler doesn't respond within 5 seconds
+      setTimeout(() => {
+        if (!resolved) {
+          resolved = true
+          console.error('Handler timeout - no response received')
+          resolve(NextResponse.json(
+            { error: 'Request timeout' },
+            { status: 504 }
+          ))
+        }
+      }, 5000)
+    } catch (error) {
+      if (!resolved) {
+        resolved = true
+        console.error('Error calling handler:', error instanceof Error ? error.message : String(error))
+        if (error instanceof Error) {
+          console.error('Stack:', error.stack)
+        }
+        reject(error)
+      }
+    }
+  })
+}
+
 export async function GET(request: NextRequest) {
   if (!isAuthenticated(request)) {
     return NextResponse.json(
@@ -82,84 +179,7 @@ export async function GET(request: NextRequest) {
   }
   
   try {
-    const h = getHandler()
-    // Try the simple approach first - pass NextResponse class directly
-    try {
-      return await h(request, NextResponse)
-    } catch (simpleError) {
-      console.log('Simple handler call failed, trying with conversion:', simpleError instanceof Error ? simpleError.message : String(simpleError))
-      
-      // Fallback to conversion approach
-      const nodeReq = {
-        url: request.url,
-        method: request.method,
-        headers: Object.fromEntries(request.headers.entries()),
-        query: Object.fromEntries(new URL(request.url).searchParams.entries()),
-      } as any
-      
-      return new Promise<NextResponse>((resolve) => {
-        let statusCode = 200
-        const headers: Record<string, string> = {}
-        let resolved = false
-        
-        const nodeRes = {
-          status(code: number) {
-            statusCode = code
-            return nodeRes
-          },
-          json(data: any) {
-            if (!resolved) {
-              resolved = true
-              resolve(NextResponse.json(data, { status: statusCode, headers }))
-            }
-            return nodeRes
-          },
-          send(data: any) {
-            if (!resolved) {
-              resolved = true
-              resolve(new NextResponse(data, { status: statusCode, headers }))
-            }
-            return nodeRes
-          },
-          setHeader(name: string, value: string) {
-            headers[name] = value
-            return nodeRes
-          },
-          end() {
-            if (!resolved) {
-              resolved = true
-              resolve(new NextResponse(null, { status: statusCode, headers }))
-            }
-            return nodeRes
-          },
-        } as any
-        
-        try {
-          const result = h(nodeReq, nodeRes)
-          if (result && typeof result.then === 'function') {
-            result.catch((err: any) => {
-              if (!resolved) {
-                resolved = true
-                console.error('Handler promise rejected:', err)
-                resolve(NextResponse.json(
-                  { error: 'Internal server error', details: err instanceof Error ? err.message : String(err) },
-                  { status: 500 }
-                ))
-              }
-            })
-          }
-        } catch (error) {
-          if (!resolved) {
-            resolved = true
-            console.error('Error calling handler:', error instanceof Error ? error.message : String(error))
-            resolve(NextResponse.json(
-              { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
-              { status: 500 }
-            ))
-          }
-        }
-      })
-    }
+    return await handleRequest(request)
   } catch (error) {
     console.error('Error in GET handler:', error instanceof Error ? error.message : String(error))
     if (error instanceof Error) {
@@ -181,86 +201,7 @@ export async function POST(request: NextRequest) {
   }
   
   try {
-    const h = getHandler()
-    // Try the simple approach first - pass NextResponse class directly
-    try {
-      return await h(request, NextResponse)
-    } catch (simpleError) {
-      console.log('Simple handler call failed, trying with conversion:', simpleError instanceof Error ? simpleError.message : String(simpleError))
-      
-      // Fallback to conversion approach
-      const body = await request.text()
-      const nodeReq = {
-        url: request.url,
-        method: request.method,
-        headers: Object.fromEntries(request.headers.entries()),
-        body: body,
-        query: Object.fromEntries(new URL(request.url).searchParams.entries()),
-      } as any
-      
-      return new Promise<NextResponse>((resolve) => {
-        let statusCode = 200
-        const headers: Record<string, string> = {}
-        let resolved = false
-        
-        const nodeRes = {
-          status(code: number) {
-            statusCode = code
-            return nodeRes
-          },
-          json(data: any) {
-            if (!resolved) {
-              resolved = true
-              resolve(NextResponse.json(data, { status: statusCode, headers }))
-            }
-            return nodeRes
-          },
-          send(data: any) {
-            if (!resolved) {
-              resolved = true
-              resolve(new NextResponse(data, { status: statusCode, headers }))
-            }
-            return nodeRes
-          },
-          setHeader(name: string, value: string) {
-            headers[name] = value
-            return nodeRes
-          },
-          end() {
-            if (!resolved) {
-              resolved = true
-              resolve(new NextResponse(null, { status: statusCode, headers }))
-            }
-            return nodeRes
-          },
-        } as any
-        
-        try {
-          const result = h(nodeReq, nodeRes)
-          if (result && typeof result.then === 'function') {
-            result.catch((err: any) => {
-              if (!resolved) {
-                resolved = true
-                console.error('Handler promise rejected:', err)
-                resolve(NextResponse.json(
-                  { error: 'Internal server error', details: err instanceof Error ? err.message : String(err) },
-                  { status: 500 }
-                ))
-              }
-            })
-          }
-        } catch (error) {
-          if (!resolved) {
-            resolved = true
-            console.error('Error calling handler:', error instanceof Error ? error.message : String(error))
-            resolve(NextResponse.json(
-              { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
-              { status: 500 }
-            ))
-          }
-        }
-      })
-    }
+    return await handleRequest(request)
   } catch (error) {
     console.error('Error in POST handler:', error instanceof Error ? error.message : String(error))
     if (error instanceof Error) {
