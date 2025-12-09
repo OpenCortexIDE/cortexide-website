@@ -81,15 +81,17 @@ function isAuthenticated(request: NextRequest): boolean {
  * Convert Next.js Request to Node.js-style request object
  * TinaNodeBackend expects Node.js-style req/res objects
  */
-function createNodeRequest(request: NextRequest, body?: string): any {
-  const url = new URL(request.url)
+function createNodeRequest(request: NextRequest, body?: string, overrideUrl?: string): any {
+  const url = new URL(overrideUrl || request.url)
   
   // Create a Node.js-style request object
   const nodeReq: any = {
-    url: request.url,
+    url: overrideUrl || request.url,
     method: request.method,
     headers: Object.fromEntries(request.headers.entries()),
     query: Object.fromEntries(url.searchParams.entries()),
+    // Add pathname for route matching
+    pathname: url.pathname,
   }
 
   // Add body for POST requests
@@ -185,27 +187,41 @@ function createNodeResponse(resolve: (response: NextResponse) => void): any {
         resolved = true
         // Combine all chunks if write() was used
         let body: string | Buffer | null = null
-        if (chunks.length > 0 || data) {
-          if (data) {
-            chunks.push(data)
-          }
-          // Convert chunks to string
+        
+        // If data is provided, add it to chunks
+        if (data) {
+          chunks.push(data)
+        }
+        
+        // Convert chunks to string if any exist
+        let finalBody: string
+        if (chunks.length > 0) {
           if (chunks.length === 1) {
-            body = typeof chunks[0] === 'string' ? chunks[0] : chunks[0].toString(encoding || 'utf8')
-          } else if (chunks.length > 1) {
-            body = chunks.map(chunk => 
+            const chunk = chunks[0]
+            finalBody = typeof chunk === 'string' ? chunk : chunk.toString(encoding || 'utf8')
+          } else {
+            finalBody = chunks.map(chunk => 
               typeof chunk === 'string' ? chunk : chunk.toString(encoding || 'utf8')
             ).join('')
           }
+        } else if (data) {
+          // Data provided directly to end()
+          finalBody = typeof data === 'string' ? data : data.toString(encoding || 'utf8')
+        } else {
+          // No chunks and no data - use empty JSON object as fallback
+          // GraphQL responses should never be null/undefined
+          finalBody = '{}'
         }
         
-        // Determine content type
-        const contentType = headers['content-type'] || 
-          (body && typeof body === 'string' && body.trim().startsWith('{') ? 'application/json' : 'text/plain')
+        // Determine content type - always use application/json for GraphQL
+        const contentType = headers['content-type'] || 'application/json'
         
-        resolve(new NextResponse(body, { 
+        // Ensure content-type header is set
+        const finalHeaders = { ...headers, 'content-type': contentType }
+        
+        resolve(new NextResponse(finalBody, { 
           status: statusCode, 
-          headers: { ...headers, 'content-type': contentType }
+          headers: finalHeaders
         }))
         
         // Call callback if provided
@@ -236,7 +252,10 @@ function createNodeResponse(resolve: (response: NextResponse) => void): any {
 /**
  * Handle Tina CMS request
  */
-async function handleRequest(request: NextRequest): Promise<NextResponse> {
+async function handleRequest(
+  request: NextRequest,
+  params?: { routes?: string[] }
+): Promise<NextResponse> {
   try {
     const h = getHandler()
     
@@ -251,8 +270,20 @@ async function handleRequest(request: NextRequest): Promise<NextResponse> {
       }
     }
     
+    // Build the full URL path including route segments
+    // TinaNodeBackend might need the full path including sub-routes
+    let requestUrl = request.url
+    if (params?.routes && params.routes.length > 0) {
+      const url = new URL(request.url)
+      // Ensure the path includes the route segments
+      const basePath = '/api/tina'
+      const routePath = params.routes.join('/')
+      url.pathname = `${basePath}/${routePath}`
+      requestUrl = url.toString()
+    }
+    
     // Create Node.js-style request and response objects
-    const nodeReq = createNodeRequest(request, body)
+    const nodeReq = createNodeRequest(request, body, requestUrl)
     
     return new Promise<NextResponse>((resolve, reject) => {
       let handlerResolved = false
@@ -290,9 +321,26 @@ async function handleRequest(request: NextRequest): Promise<NextResponse> {
         // Handle promise if handler returns one
         if (result && typeof result.then === 'function') {
           result
-            .then(() => {
-              // Handler promise resolved - response should have been sent via nodeRes methods
-              // If not resolved yet, the timeout will handle it
+            .then((response: any) => {
+              // Handler promise resolved
+              // If response was already sent via nodeRes methods, this is fine
+              // If handler returns a response directly, use it
+              if (!handlerResolved && response) {
+                handlerResolved = true
+                if (timeout) {
+                  clearTimeout(timeout)
+                }
+                // Handler returned a response object
+                if (response instanceof NextResponse) {
+                  wrappedResolve(response)
+                } else if (typeof response === 'object' && response.body) {
+                  // Convert to NextResponse if needed
+                  wrappedResolve(NextResponse.json(response.body, { 
+                    status: response.status || 200,
+                    headers: response.headers || {}
+                  }))
+                }
+              }
             })
             .catch((err: any) => {
               if (!handlerResolved) {
@@ -310,6 +358,15 @@ async function handleRequest(request: NextRequest): Promise<NextResponse> {
                 ))
               }
             })
+        } else {
+          // Handler is synchronous - check if response was sent
+          // Give it a small delay to allow nodeRes methods to be called
+          setTimeout(() => {
+            if (!handlerResolved) {
+              // Handler didn't send response - this shouldn't happen but handle gracefully
+              console.warn('TinaCMS handler did not send a response')
+            }
+          }, 100)
         }
         // If handler is synchronous, nodeRes methods will handle the response
       } catch (error) {
@@ -338,7 +395,10 @@ async function handleRequest(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { routes?: string[] } }
+) {
   if (!isAuthenticated(request)) {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -347,7 +407,7 @@ export async function GET(request: NextRequest) {
   }
   
   try {
-    return await handleRequest(request)
+    return await handleRequest(request, params)
   } catch (error) {
     console.error('Error in GET handler:', error instanceof Error ? error.message : String(error))
     if (error instanceof Error) {
@@ -367,7 +427,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { routes?: string[] } }
+) {
   if (!isAuthenticated(request)) {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -376,7 +439,7 @@ export async function POST(request: NextRequest) {
   }
   
   try {
-    return await handleRequest(request)
+    return await handleRequest(request, params)
   } catch (error) {
     console.error('Error in POST handler:', error instanceof Error ? error.message : String(error))
     if (error instanceof Error) {
