@@ -348,15 +348,40 @@ async function handleRequest(
         
         // Call the Tina handler
         // TinaNodeBackend may return a promise or use callbacks via nodeRes
+        // It might also return a Response directly (though unlikely)
         let handlerCalled = false
         try {
           const result = h(nodeReq, nodeRes)
           handlerCalled = true
           
+          // Check if handler returned a Response directly (Next.js style)
+          if (result instanceof NextResponse) {
+            if (!handlerResolved) {
+              handlerResolved = true
+              if (timeout) {
+                clearTimeout(timeout)
+              }
+              wrappedResolve(result)
+              return
+            }
+          }
+          
           // Handle promise if handler returns one
           if (result && typeof result.then === 'function') {
             result
               .then((response: any) => {
+                // Check if promise resolved to a Response
+                if (response instanceof NextResponse) {
+                  if (!handlerResolved) {
+                    handlerResolved = true
+                    if (timeout) {
+                      clearTimeout(timeout)
+                    }
+                    wrappedResolve(response)
+                    return
+                  }
+                }
+                
                 // Handler promise resolved
                 // Response should have been sent via nodeRes methods (write/end)
                 // If not resolved after a short delay, something went wrong
@@ -400,8 +425,9 @@ async function handleRequest(
                 }
               })
           } else if (result !== undefined && result !== null) {
-            // Handler returned something that's not a promise
-            console.warn('[TinaCMS] Handler returned non-promise value:', typeof result, result)
+            // Handler returned something that's not a promise or Response
+            console.warn('[TinaCMS] Handler returned non-promise, non-Response value:', typeof result, result)
+            // Still wait for nodeRes callbacks
           }
         } catch (handlerError) {
           if (!handlerResolved) {
@@ -410,6 +436,9 @@ async function handleRequest(
               clearTimeout(timeout)
             }
             console.error('[TinaCMS] Handler threw synchronously:', handlerError)
+            if (handlerError instanceof Error) {
+              console.error('[TinaCMS] Stack:', handlerError.stack)
+            }
             wrappedResolve(NextResponse.json(
               { 
                 errors: [{ 
@@ -424,6 +453,21 @@ async function handleRequest(
         
         if (!handlerCalled) {
           console.error('[TinaCMS] Handler was not called')
+          if (!handlerResolved) {
+            handlerResolved = true
+            if (timeout) {
+              clearTimeout(timeout)
+            }
+            wrappedResolve(NextResponse.json(
+              { 
+                errors: [{ 
+                  message: 'Handler was not called',
+                  extensions: { code: 'INTERNAL_SERVER_ERROR' }
+                }]
+              },
+              { status: 500 }
+            ))
+          }
         }
         // If handler doesn't return a promise, it uses callbacks (nodeRes methods)
         // The nodeRes methods (write/end/json) will handle sending the response
