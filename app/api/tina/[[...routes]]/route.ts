@@ -106,20 +106,48 @@ function createNodeRequest(request: NextRequest, body?: string): any {
 
 /**
  * Create a Node.js-style response object
+ * Must support write() method for streaming responses (required by TinaNodeBackend)
  */
 function createNodeResponse(resolve: (response: NextResponse) => void): any {
   let statusCode = 200
   const headers: Record<string, string> = {}
   let resolved = false
+  const chunks: (string | Buffer)[] = []
+  let headersSent = false
 
   const nodeRes: any = {
+    statusCode: 200,
     status(code: number) {
       statusCode = code
+      nodeRes.statusCode = code
       return nodeRes
+    },
+    writeHead(status: number, statusMessage?: string, responseHeaders?: Record<string, string>) {
+      if (!headersSent) {
+        statusCode = status
+        nodeRes.statusCode = status
+        if (responseHeaders) {
+          Object.entries(responseHeaders).forEach(([key, value]) => {
+            headers[key.toLowerCase()] = Array.isArray(value) ? value[0] : value
+          })
+        }
+        headersSent = true
+      }
+      return nodeRes
+    },
+    write(chunk: string | Buffer, encoding?: BufferEncoding): boolean {
+      // Buffer chunks until end() is called
+      // Return true to indicate write was successful
+      if (!resolved) {
+        chunks.push(chunk)
+        return true
+      }
+      return false
     },
     json(data: any) {
       if (!resolved) {
         resolved = true
+        headers['content-type'] = 'application/json'
         resolve(NextResponse.json(data, { status: statusCode, headers }))
       }
       return nodeRes
@@ -135,23 +163,70 @@ function createNodeResponse(resolve: (response: NextResponse) => void): any {
       }
       return nodeRes
     },
-    setHeader(name: string, value: string) {
-      headers[name.toLowerCase()] = value
+    setHeader(name: string, value: string | string[]) {
+      headers[name.toLowerCase()] = Array.isArray(value) ? value[0] : value
       return nodeRes
     },
     getHeader(name: string) {
       return headers[name.toLowerCase()]
     },
-    end(data?: any) {
+    removeHeader(name: string) {
+      delete headers[name.toLowerCase()]
+      return nodeRes
+    },
+    getHeaders() {
+      return { ...headers }
+    },
+    hasHeader(name: string) {
+      return name.toLowerCase() in headers
+    },
+    end(data?: string | Buffer, encoding?: BufferEncoding, cb?: () => void) {
       if (!resolved) {
         resolved = true
-        if (data) {
-          resolve(new NextResponse(data, { status: statusCode, headers }))
-        } else {
-          resolve(new NextResponse(null, { status: statusCode, headers }))
+        // Combine all chunks if write() was used
+        let body: string | Buffer | null = null
+        if (chunks.length > 0 || data) {
+          if (data) {
+            chunks.push(data)
+          }
+          // Convert chunks to string
+          if (chunks.length === 1) {
+            body = typeof chunks[0] === 'string' ? chunks[0] : chunks[0].toString(encoding || 'utf8')
+          } else if (chunks.length > 1) {
+            body = chunks.map(chunk => 
+              typeof chunk === 'string' ? chunk : chunk.toString(encoding || 'utf8')
+            ).join('')
+          }
+        }
+        
+        // Determine content type
+        const contentType = headers['content-type'] || 
+          (body && typeof body === 'string' && body.trim().startsWith('{') ? 'application/json' : 'text/plain')
+        
+        resolve(new NextResponse(body, { 
+          status: statusCode, 
+          headers: { ...headers, 'content-type': contentType }
+        }))
+        
+        // Call callback if provided
+        if (cb) {
+          cb()
         }
       }
       return nodeRes
+    },
+    // Event emitter methods (may be expected)
+    on(event: string, listener: (...args: any[]) => void) {
+      // No-op for now, but handler might expect this
+      return nodeRes
+    },
+    once(event: string, listener: (...args: any[]) => void) {
+      // No-op for now
+      return nodeRes
+    },
+    emit(event: string, ...args: any[]) {
+      // No-op for now
+      return false
     },
   }
 
@@ -180,15 +255,28 @@ async function handleRequest(request: NextRequest): Promise<NextResponse> {
     const nodeReq = createNodeRequest(request, body)
     
     return new Promise<NextResponse>((resolve, reject) => {
-      const nodeRes = createNodeResponse(resolve)
       let handlerResolved = false
+      let timeout: NodeJS.Timeout | null = null
+      
+      // Wrapper to ensure timeout is cleared when response is sent
+      const wrappedResolve = (response: NextResponse) => {
+        if (!handlerResolved) {
+          handlerResolved = true
+          if (timeout) {
+            clearTimeout(timeout)
+          }
+          resolve(response)
+        }
+      }
+      
+      const nodeRes = createNodeResponse(wrappedResolve)
       
       // Set a timeout to prevent hanging requests
-      const timeout = setTimeout(() => {
+      timeout = setTimeout(() => {
         if (!handlerResolved) {
           handlerResolved = true
           console.error('TinaCMS handler timeout after 30 seconds')
-          resolve(NextResponse.json(
+          wrappedResolve(NextResponse.json(
             { error: 'Request timeout' },
             { status: 504 }
           ))
@@ -203,37 +291,44 @@ async function handleRequest(request: NextRequest): Promise<NextResponse> {
         if (result && typeof result.then === 'function') {
           result
             .then(() => {
-              if (!handlerResolved) {
-                handlerResolved = true
-                clearTimeout(timeout)
-                // Handler should have called nodeRes methods, but if not, send empty response
-                if (!nodeRes._resolved) {
-                  resolve(new NextResponse(null, { status: 200 }))
-                }
-              }
+              // Handler promise resolved - response should have been sent via nodeRes methods
+              // If not resolved yet, the timeout will handle it
             })
             .catch((err: any) => {
               if (!handlerResolved) {
                 handlerResolved = true
-                clearTimeout(timeout)
+                if (timeout) {
+                  clearTimeout(timeout)
+                }
                 console.error('TinaCMS handler promise rejected:', err)
-                reject(err)
+                wrappedResolve(NextResponse.json(
+                  { 
+                    error: 'Internal server error', 
+                    message: err instanceof Error ? err.message : String(err)
+                  },
+                  { status: 500 }
+                ))
               }
             })
-        } else {
-          // Handler is synchronous or uses callbacks
-          // Clear timeout if handler resolves quickly
-          // The nodeRes methods will handle the response
         }
+        // If handler is synchronous, nodeRes methods will handle the response
       } catch (error) {
         if (!handlerResolved) {
           handlerResolved = true
-          clearTimeout(timeout)
+          if (timeout) {
+            clearTimeout(timeout)
+          }
           console.error('Error calling TinaCMS handler:', error instanceof Error ? error.message : String(error))
           if (error instanceof Error) {
             console.error('Stack:', error.stack)
           }
-          reject(error)
+          wrappedResolve(NextResponse.json(
+            { 
+              error: 'Internal server error', 
+              message: error instanceof Error ? error.message : String(error)
+            },
+            { status: 500 }
+          ))
         }
       }
     })
