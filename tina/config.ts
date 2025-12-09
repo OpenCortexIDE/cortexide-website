@@ -29,6 +29,30 @@ export default defineConfig({
         label: 'Blog Posts',
         path: 'app/blog/[slug]/content',
         format: 'mdx',
+        match: {
+          include: '*.mdx',
+        },
+        ui: {
+          filename: {
+            slugify: (values) => {
+              if (!values || !values.title) {
+                return 'untitled'
+              }
+              return values.title
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '') || 'untitled'
+            },
+          },
+        },
+        defaultItem: () => {
+          return {
+            title: 'New Blog Post',
+            description: '',
+            publishedAt: new Date().toISOString().split('T')[0],
+            body: '',
+          }
+        },
         fields: [
           {
             type: 'string',
