@@ -142,6 +142,9 @@ function createNodeResponse(resolve: (response: NextResponse) => void): any {
       // Return true to indicate write was successful
       if (!resolved) {
         chunks.push(chunk)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[TinaCMS] write() called, chunk length:', typeof chunk === 'string' ? chunk.length : chunk.length)
+        }
         return true
       }
       return false
