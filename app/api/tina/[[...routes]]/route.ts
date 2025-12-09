@@ -397,20 +397,41 @@ async function handleRequest(
         }
         // If handler doesn't return a promise, it uses callbacks (nodeRes methods)
         // The nodeRes methods (write/end/json) will handle sending the response
+        // Add a safety timeout to ensure we always send a response
+        setTimeout(() => {
+          if (!handlerResolved) {
+            handlerResolved = true
+            if (timeout) {
+              clearTimeout(timeout)
+            }
+            console.error('[TinaCMS] Handler did not send a response within 5 seconds')
+            wrappedResolve(NextResponse.json(
+              { 
+                errors: [{ 
+                  message: 'Handler timeout - no response received',
+                  extensions: { code: 'INTERNAL_SERVER_ERROR' }
+                }]
+              },
+              { status: 500 }
+            ))
+          }
+        }, 5000)
       } catch (error) {
         if (!handlerResolved) {
           handlerResolved = true
           if (timeout) {
             clearTimeout(timeout)
           }
-          console.error('Error calling TinaCMS handler:', error instanceof Error ? error.message : String(error))
+          console.error('[TinaCMS] Error calling handler:', error instanceof Error ? error.message : String(error))
           if (error instanceof Error) {
             console.error('Stack:', error.stack)
           }
           wrappedResolve(NextResponse.json(
             { 
-              error: 'Internal server error', 
-              message: error instanceof Error ? error.message : String(error)
+              errors: [{ 
+                message: error instanceof Error ? error.message : String(error),
+                extensions: { code: 'INTERNAL_SERVER_ERROR' }
+              }]
             },
             { status: 500 }
           ))
