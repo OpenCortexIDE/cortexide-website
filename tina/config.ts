@@ -11,7 +11,7 @@ export default defineConfig({
   // Tina Cloud mode - requires NEXT_PUBLIC_TINA_CLIENT_ID and TINA_TOKEN
   clientId: process.env.NEXT_PUBLIC_TINA_CLIENT_ID,
   token: process.env.TINA_TOKEN,
-  contentApiUrlOverride: '/api/tina/gql',
+  contentApiUrlOverride: '/api/tina',
   build: {
     outputFolder: 'admin',
     publicFolder: 'public',
