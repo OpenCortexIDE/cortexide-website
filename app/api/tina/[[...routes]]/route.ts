@@ -205,12 +205,18 @@ function createNodeResponse(resolve: (response: NextResponse) => void): any {
             ).join('')
           }
         } else if (data) {
-          // Data provided directly to end()
+          // Data provided directly to end() without write() calls
           finalBody = typeof data === 'string' ? data : data.toString(encoding || 'utf8')
         } else {
-          // No chunks and no data - use empty JSON object as fallback
-          // GraphQL responses should never be null/undefined
-          finalBody = '{}'
+          // No chunks and no data - this shouldn't happen for GraphQL queries
+          // Log warning and return error response
+          console.warn('TinaCMS handler called end() without data or chunks - this may indicate an error')
+          finalBody = JSON.stringify({ 
+            errors: [{ 
+              message: 'Empty response from handler',
+              extensions: { code: 'INTERNAL_SERVER_ERROR' }
+            }]
+          })
         }
         
         // Determine content type - always use application/json for GraphQL
@@ -218,6 +224,16 @@ function createNodeResponse(resolve: (response: NextResponse) => void): any {
         
         // Ensure content-type header is set
         const finalHeaders = { ...headers, 'content-type': contentType }
+        
+        // Log response in development for debugging
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[TinaCMS] Sending response:', {
+            status: statusCode,
+            contentType,
+            bodyLength: finalBody.length,
+            hasData: finalBody.length > 2 && finalBody !== '{}'
+          })
+        }
         
         resolve(new NextResponse(finalBody, { 
           status: statusCode, 
@@ -315,7 +331,19 @@ async function handleRequest(
       }, 30000)
       
       try {
+        // Log request in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[TinaCMS] Handling request:', {
+            method: nodeReq.method,
+            url: nodeReq.url,
+            pathname: nodeReq.pathname,
+            hasBody: !!body,
+            bodyLength: body?.length || 0
+          })
+        }
+        
         // Call the Tina handler
+        // TinaNodeBackend may return a promise or use callbacks via nodeRes
         const result = h(nodeReq, nodeRes)
         
         // Handle promise if handler returns one
@@ -323,24 +351,27 @@ async function handleRequest(
           result
             .then((response: any) => {
               // Handler promise resolved
-              // If response was already sent via nodeRes methods, this is fine
-              // If handler returns a response directly, use it
-              if (!handlerResolved && response) {
-                handlerResolved = true
-                if (timeout) {
-                  clearTimeout(timeout)
+              // Response should have been sent via nodeRes methods (write/end)
+              // If not resolved after a short delay, something went wrong
+              setTimeout(() => {
+                if (!handlerResolved) {
+                  handlerResolved = true
+                  if (timeout) {
+                    clearTimeout(timeout)
+                  }
+                  console.error('[TinaCMS] Handler promise resolved but no response was sent via nodeRes methods')
+                  // This shouldn't happen - handler should call end() or json()
+                  wrappedResolve(NextResponse.json(
+                    { 
+                      errors: [{ 
+                        message: 'Handler did not send a response',
+                        extensions: { code: 'INTERNAL_SERVER_ERROR' }
+                      }]
+                    },
+                    { status: 500 }
+                  ))
                 }
-                // Handler returned a response object
-                if (response instanceof NextResponse) {
-                  wrappedResolve(response)
-                } else if (typeof response === 'object' && response.body) {
-                  // Convert to NextResponse if needed
-                  wrappedResolve(NextResponse.json(response.body, { 
-                    status: response.status || 200,
-                    headers: response.headers || {}
-                  }))
-                }
-              }
+              }, 100)
             })
             .catch((err: any) => {
               if (!handlerResolved) {
@@ -348,27 +379,21 @@ async function handleRequest(
                 if (timeout) {
                   clearTimeout(timeout)
                 }
-                console.error('TinaCMS handler promise rejected:', err)
+                console.error('[TinaCMS] Handler promise rejected:', err)
                 wrappedResolve(NextResponse.json(
                   { 
-                    error: 'Internal server error', 
-                    message: err instanceof Error ? err.message : String(err)
+                    errors: [{ 
+                      message: err instanceof Error ? err.message : String(err),
+                      extensions: { code: 'INTERNAL_SERVER_ERROR' }
+                    }]
                   },
                   { status: 500 }
                 ))
               }
             })
-        } else {
-          // Handler is synchronous - check if response was sent
-          // Give it a small delay to allow nodeRes methods to be called
-          setTimeout(() => {
-            if (!handlerResolved) {
-              // Handler didn't send response - this shouldn't happen but handle gracefully
-              console.warn('TinaCMS handler did not send a response')
-            }
-          }, 100)
         }
-        // If handler is synchronous, nodeRes methods will handle the response
+        // If handler doesn't return a promise, it uses callbacks (nodeRes methods)
+        // The nodeRes methods (write/end/json) will handle sending the response
       } catch (error) {
         if (!handlerResolved) {
           handlerResolved = true
