@@ -3,7 +3,9 @@ import { TinaNodeBackend, LocalBackendAuthProvider } from '@tinacms/datalayer'
 import { TinaCloudBackendAuthProvider } from '@tinacms/auth'
 
 // Check if we're using Tina Cloud or local mode
-const isTinaCloud = !!process.env.NEXT_PUBLIC_TINA_CLIENT_ID && !!process.env.TINA_TOKEN
+// Use TINA_PUBLIC_IS_LOCAL if set, otherwise check for Cloud credentials
+const isLocal = process.env.TINA_PUBLIC_IS_LOCAL === 'true'
+const isTinaCloud = !isLocal && !!process.env.NEXT_PUBLIC_TINA_CLIENT_ID && !!process.env.TINA_TOKEN
 
 // Import database client statically (as per TinaCMS documentation)
 // Path from app/api/tina/[[...routes]]/route.ts to tina/__generated__/databaseClient
@@ -20,7 +22,9 @@ function getHandler() {
   try {
     // Verify database client is available
     if (!databaseClient) {
-      throw new Error('Database client is not available. Make sure tinacms build ran successfully.')
+      const errorMsg = 'Database client is not available. Make sure tinacms build ran successfully and tina/__generated__/databaseClient.ts exists.'
+      console.error(errorMsg)
+      throw new Error(errorMsg)
     }
 
     // Use appropriate auth provider based on mode
@@ -74,100 +78,169 @@ function isAuthenticated(request: NextRequest): boolean {
 }
 
 /**
- * Convert Next.js request to Node.js-style request and handle response
+ * Convert Next.js Request to Node.js-style request object
+ * TinaNodeBackend expects Node.js-style req/res objects
  */
-async function handleRequest(request: NextRequest): Promise<NextResponse> {
-  const h = getHandler()
-  
-  // Convert Next.js request to Node.js-style request
+function createNodeRequest(request: NextRequest, body?: string): any {
   const url = new URL(request.url)
-  const body = request.method === 'POST' ? await request.text() : undefined
   
-  const nodeReq = {
+  // Create a Node.js-style request object
+  const nodeReq: any = {
     url: request.url,
     method: request.method,
     headers: Object.fromEntries(request.headers.entries()),
-    body: body,
     query: Object.fromEntries(url.searchParams.entries()),
-  } as any
+  }
+
+  // Add body for POST requests
+  if (body !== undefined) {
+    nodeReq.body = body
+  }
+
+  // Add common Node.js request properties that might be expected
+  nodeReq.get = (name: string) => request.headers.get(name)
+  nodeReq.header = (name: string) => request.headers.get(name)
   
-  return new Promise<NextResponse>((resolve, reject) => {
-    let statusCode = 200
-    const headers: Record<string, string> = {}
-    let resolved = false
-    
-    const nodeRes = {
-      status(code: number) {
-        statusCode = code
-        return nodeRes
-      },
-      json(data: any) {
-        if (!resolved) {
-          resolved = true
-          resolve(NextResponse.json(data, { status: statusCode, headers }))
-        }
-        return nodeRes
-      },
-      send(data: any) {
-        if (!resolved) {
-          resolved = true
+  return nodeReq
+}
+
+/**
+ * Create a Node.js-style response object
+ */
+function createNodeResponse(resolve: (response: NextResponse) => void): any {
+  let statusCode = 200
+  const headers: Record<string, string> = {}
+  let resolved = false
+
+  const nodeRes: any = {
+    status(code: number) {
+      statusCode = code
+      return nodeRes
+    },
+    json(data: any) {
+      if (!resolved) {
+        resolved = true
+        resolve(NextResponse.json(data, { status: statusCode, headers }))
+      }
+      return nodeRes
+    },
+    send(data: any) {
+      if (!resolved) {
+        resolved = true
+        const contentType = headers['content-type'] || 'text/plain'
+        resolve(new NextResponse(data, { 
+          status: statusCode, 
+          headers: { ...headers, 'content-type': contentType }
+        }))
+      }
+      return nodeRes
+    },
+    setHeader(name: string, value: string) {
+      headers[name.toLowerCase()] = value
+      return nodeRes
+    },
+    getHeader(name: string) {
+      return headers[name.toLowerCase()]
+    },
+    end(data?: any) {
+      if (!resolved) {
+        resolved = true
+        if (data) {
           resolve(new NextResponse(data, { status: statusCode, headers }))
-        }
-        return nodeRes
-      },
-      setHeader(name: string, value: string) {
-        headers[name] = value
-        return nodeRes
-      },
-      end() {
-        if (!resolved) {
-          resolved = true
+        } else {
           resolve(new NextResponse(null, { status: statusCode, headers }))
         }
-        return nodeRes
-      },
-    } as any
-    
-    try {
-      const result = h(nodeReq, nodeRes)
-      if (result && typeof result.then === 'function') {
-        result.then(() => {
-          // Handler resolved via nodeRes methods
-          if (!resolved) {
-            resolved = true
-            resolve(new NextResponse(null, { status: statusCode, headers }))
-          }
-        }).catch((err: any) => {
-          if (!resolved) {
-            resolved = true
-            console.error('Handler promise rejected:', err)
-            reject(err)
-          }
-        })
       }
+      return nodeRes
+    },
+  }
+
+  return nodeRes
+}
+
+/**
+ * Handle Tina CMS request
+ */
+async function handleRequest(request: NextRequest): Promise<NextResponse> {
+  try {
+    const h = getHandler()
+    
+    // Get request body for POST requests
+    let body: string | undefined
+    if (request.method === 'POST' || request.method === 'PUT' || request.method === 'PATCH') {
+      try {
+        body = await request.text()
+      } catch (error) {
+        console.error('Error reading request body:', error)
+        body = ''
+      }
+    }
+    
+    // Create Node.js-style request and response objects
+    const nodeReq = createNodeRequest(request, body)
+    
+    return new Promise<NextResponse>((resolve, reject) => {
+      const nodeRes = createNodeResponse(resolve)
+      let handlerResolved = false
       
-      // Timeout fallback - if handler doesn't respond within 5 seconds
-      setTimeout(() => {
-        if (!resolved) {
-          resolved = true
-          console.error('Handler timeout - no response received')
+      // Set a timeout to prevent hanging requests
+      const timeout = setTimeout(() => {
+        if (!handlerResolved) {
+          handlerResolved = true
+          console.error('TinaCMS handler timeout after 30 seconds')
           resolve(NextResponse.json(
             { error: 'Request timeout' },
             { status: 504 }
           ))
         }
-      }, 5000)
-    } catch (error) {
-      if (!resolved) {
-        resolved = true
-        console.error('Error calling handler:', error instanceof Error ? error.message : String(error))
-        if (error instanceof Error) {
-          console.error('Stack:', error.stack)
+      }, 30000)
+      
+      try {
+        // Call the Tina handler
+        const result = h(nodeReq, nodeRes)
+        
+        // Handle promise if handler returns one
+        if (result && typeof result.then === 'function') {
+          result
+            .then(() => {
+              if (!handlerResolved) {
+                handlerResolved = true
+                clearTimeout(timeout)
+                // Handler should have called nodeRes methods, but if not, send empty response
+                if (!nodeRes._resolved) {
+                  resolve(new NextResponse(null, { status: 200 }))
+                }
+              }
+            })
+            .catch((err: any) => {
+              if (!handlerResolved) {
+                handlerResolved = true
+                clearTimeout(timeout)
+                console.error('TinaCMS handler promise rejected:', err)
+                reject(err)
+              }
+            })
+        } else {
+          // Handler is synchronous or uses callbacks
+          // Clear timeout if handler resolves quickly
+          // The nodeRes methods will handle the response
         }
-        reject(error)
+      } catch (error) {
+        if (!handlerResolved) {
+          handlerResolved = true
+          clearTimeout(timeout)
+          console.error('Error calling TinaCMS handler:', error instanceof Error ? error.message : String(error))
+          if (error instanceof Error) {
+            console.error('Stack:', error.stack)
+          }
+          reject(error)
+        }
       }
-    }
-  })
+    })
+  } catch (error) {
+    console.error('Error in handleRequest:', error instanceof Error ? error.message : String(error))
+    throw error
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -186,7 +259,14 @@ export async function GET(request: NextRequest) {
       console.error('Stack:', error.stack)
     }
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
+      { 
+        error: 'Internal server error', 
+        message: error instanceof Error ? error.message : String(error),
+        // Include helpful error message for database client issues
+        hint: error instanceof Error && error.message.includes('database client') 
+          ? 'Make sure tinacms build ran successfully before deployment'
+          : undefined
+      },
       { status: 500 }
     )
   }
@@ -208,7 +288,14 @@ export async function POST(request: NextRequest) {
       console.error('Stack:', error.stack)
     }
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
+      { 
+        error: 'Internal server error', 
+        message: error instanceof Error ? error.message : String(error),
+        // Include helpful error message for database client issues
+        hint: error instanceof Error && error.message.includes('database client') 
+          ? 'Make sure tinacms build ran successfully before deployment'
+          : undefined
+      },
       { status: 500 }
     )
   }

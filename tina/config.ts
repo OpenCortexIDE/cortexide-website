@@ -6,12 +6,22 @@ const branch =
   process.env.HEAD ||
   'main'
 
+// Determine API URL - use absolute URL in production if possible
+const getApiUrl = () => {
+  // If TINA_PUBLIC_API_URL is set, use it (allows override for production)
+  if (process.env.TINA_PUBLIC_API_URL) {
+    return process.env.TINA_PUBLIC_API_URL
+  }
+  // Otherwise use relative URL (works for same-origin requests)
+  return '/api/tina'
+}
+
 export default defineConfig({
   branch,
   // Tina Cloud mode - requires NEXT_PUBLIC_TINA_CLIENT_ID and TINA_TOKEN
   clientId: process.env.NEXT_PUBLIC_TINA_CLIENT_ID,
   token: process.env.TINA_TOKEN,
-  contentApiUrlOverride: '/api/tina',
+  contentApiUrlOverride: getApiUrl(),
   build: {
     outputFolder: 'admin',
     publicFolder: 'public',
