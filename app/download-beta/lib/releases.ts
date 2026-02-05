@@ -280,7 +280,7 @@ export async function getLatestRelease(forceRefresh = false): Promise<{ version:
         'https://raw.githubusercontent.com/OpenCortexIDE/cortexide-versions/main/version.txt',
         'https://raw.githubusercontent.com/OpenCortexIDE/cortexide-versions/main/stable.txt',
     ];
-    let version = cachedVersion ?? '1.99.30023';
+    let version = cachedVersion ?? '1.106.00200';
     for (const url of candidateVersionFiles) {
         try {
             const res = await fetch(url, { next: { revalidate: TTL / 1000 } });
