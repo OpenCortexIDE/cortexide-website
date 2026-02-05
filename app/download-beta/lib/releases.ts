@@ -159,6 +159,13 @@ export async function getLatestRelease(forceRefresh = false): Promise<{ version:
         }
         const response = await fetch('https://api.github.com/repos/OpenCortexIDE/cortexide-binaries/releases/latest', fetchOptions);
 
+        if (!response.ok) {
+            console.warn(
+                `[Download] GitHub API releases/latest failed: ${response.status} ${response.statusText}. ` +
+                (response.status === 403 ? 'Rate limit? Set GITHUB_TOKEN in production.' : '')
+            );
+        }
+
         if (response.ok) {
             const data = await response.json();
             const version = data.tag_name as string;
@@ -264,9 +271,10 @@ export async function getLatestRelease(forceRefresh = false): Promise<{ version:
             return { version, links };
         }
     } catch (e) {
-        console.error('Failed to fetch latest release:', e);
+        console.error('[Download] Failed to fetch latest release:', e);
     }
 
+    // Fallback: get version from cortexide-versions or use hardcoded default
     const candidateVersionFiles = [
         'https://raw.githubusercontent.com/OpenCortexIDE/cortexide-versions/main/latest.txt',
         'https://raw.githubusercontent.com/OpenCortexIDE/cortexide-versions/main/version.txt',
@@ -285,6 +293,49 @@ export async function getLatestRelease(forceRefresh = false): Promise<{ version:
             }
         } catch {}
     }
+
+    // When /releases/latest failed, try to fetch this specific version's release to get real asset URLs (avoids 404s if filenames have BUILD_ID)
+    const tagForApi = version.startsWith('v') ? version : `v${version}`;
+    try {
+        const headers: Record<string, string> = {};
+        if (process.env.GITHUB_TOKEN) {
+            headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+        }
+        const byTagRes = await fetch(
+            `https://api.github.com/repos/OpenCortexIDE/cortexide-binaries/releases/tags/${tagForApi}`,
+            { headers, next: { revalidate: TTL / 1000 } }
+        );
+        if (byTagRes.ok) {
+            const data = await byTagRes.json();
+            const assets: ReleaseAsset[] = data.assets ?? [];
+            const linuxOptions = buildLinuxOptionsFromAssets(assets);
+            if (!linuxOptions.length) {
+                linuxOptions.push(...LEGACY_LINUX_OPTIONS);
+            }
+            const pick = (regex: RegExp): string | undefined => {
+                const found = assets.find((a) => regex.test(a.name));
+                return found?.browser_download_url;
+            };
+            const links: DownloadLinks = {
+                windows: {
+                    x64: pick(/^CortexIDESetup-x64-.*\.exe$/i) ?? pick(/^VoidSetup-x64-.*\.exe$/i),
+                    arm: pick(/^CortexIDESetup-arm64-.*\.exe$/i) ?? pick(/^VoidSetup-arm64-.*\.exe$/i),
+                },
+                mac: {
+                    intel: pick(/^CortexIDE\.x64\..*\.dmg$/i) ?? pick(/^Void\.x64\..*\.dmg$/i) ?? pick(/darwin-x64.*\.dmg$/i),
+                    appleSilicon: pick(/^CortexIDE\.arm64\..*\.dmg$/i) ?? pick(/^Void\.arm64\..*\.dmg$/i) ?? pick(/darwin-arm64.*\.dmg$/i),
+                },
+                linux: linuxOptions,
+            };
+            cachedVersion = version;
+            cachedLinks = links;
+            lastChecked = now;
+            return { version, links };
+        }
+    } catch (_) {
+        // Ignore; use createDefaultLinks below
+    }
+
     cachedVersion = version;
     const links = createDefaultLinks(version);
     cachedLinks = links;
