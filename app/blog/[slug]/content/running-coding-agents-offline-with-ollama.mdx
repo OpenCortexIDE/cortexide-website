@@ -1,0 +1,65 @@
+---
+title: "Running coding agents fully offline with CortexIDE and Ollama"
+description: "Walk through CortexIDE's local setup wizard, the curated model pack catalogue, and the hardware-aware recommendation that picks a model your machine can actually run."
+publishedAt: "2026-05-24"
+---
+
+Most AI coding agents assume you have an API key and a working internet connection. CortexIDE does not. On first launch, the onboarding flow offers a "local" path that installs Ollama, picks a model that fits your VRAM, pulls it, and verifies the daemon is reachable before you write a single line of code. The whole loop, from prompt to streaming response, runs on your hardware.
+
+This post covers what the wizard actually does, the five model packs it can pick from, and how the hardware detection step decides which one to recommend.
+
+## What the local setup wizard does
+
+The wizard lives in `LocalSetupWizard.tsx` under the React onboarding entry point. It is a five-step state machine:
+
+1. **Choice** — Local, cloud, or skip. Selecting "local" calls `localSetupService.startWizard()` and runs a system check.
+2. **System check** — Detects whether Ollama is installed and whether its HTTP daemon is reachable. If not, the wizard offers an in-process install via `IOllamaInstallerService.install()`, which dispatches to the right package manager for your OS (`brew`, `winget`, `choco`, or the official `curl` script).
+3. **Model pack selection** — Shows the five packs from `MODEL_PACKS` (in `ollamaModelPacks.ts`) and pre-selects the one the hardware detector recommends.
+4. **Download** — Streams pull progress over IPC. Every percent and status line from `ollama pull` is forwarded through the `onPullProgress` event so the UI can render a real progress bar instead of a spinner.
+5. **Verification** — Sends a tiny generation request to confirm the model loaded correctly.
+
+If any step fails, the wizard persists the error so reopening it drops you back at the right step instead of starting over.
+
+## The model pack catalogue
+
+`ollamaModelPacks.ts` defines exactly five tiers. Every recommendation the wizard makes is one of these:
+
+| Pack | Tag | VRAM | Why |
+|---|---|---|---|
+| Minimal | `phi4-mini` | 4 GB | Absolute floor. Use only if nothing else fits. |
+| Fast | `qwen2.5-coder:7b` | 8 GB | MacBook Air M2/M3 and similar. |
+| Reasoning | `deepseek-coder-v2:16b` | 12 GB | MoE architecture, good for multi-step planning. |
+| Balanced | `qwen2.5-coder:14b` | 16 GB | The default recommendation. Best all-rounder. |
+| Powerful | `codestral:22b` | 24 GB+ | Lowest latency on high-end GPUs. |
+
+No other tags ship in the picker. The Ollama installer validates pulls against this allowlist in the main process, so a compromised renderer cannot ask the daemon to pull an arbitrary tag.
+
+## How the recommendation is computed
+
+When the wizard mounts, it calls `getHardwareInfo()` on `IOllamaInstallerService`. The main-process implementation reads VRAM (or unified memory on Apple Silicon) and returns the largest pack whose `requiredVramGB` fits, with `balanced` as the fallback default. The result is one object:
+
+```ts
+interface HardwareInfo {
+  vramGB: number | null;
+  recommendedPack: ModelPackKey;
+}
+```
+
+The recommended key is fed into `setSelectedPack()` so the user lands on the right tile by default. They can override it, but most people just click "Download" and get a model their machine can run.
+
+## Trying it
+
+If you already have CortexIDE installed:
+
+1. Run **CortexIDE: Reset Onboarding** from the command palette.
+2. Pick **Local** on the first screen.
+3. Let the wizard install Ollama if needed, accept the recommended pack, and wait for the pull to finish.
+4. Open the chat panel. The provider dropdown will already be set to Ollama, with your downloaded model selected.
+
+From there, everything works the same as the cloud path: agent mode, plan mode, codebase search, MCP tools. The only difference is that no token ever leaves your machine.
+
+## What this is not
+
+Local models are not magic. A 7B model will not match Claude or GPT-4 on hard reasoning. What CortexIDE gives you is the choice: when you are on a plane, on a privacy-sensitive codebase, or just experimenting with a new stack, the local path is one click away and it actually works. When you want a frontier model for a hard refactor, switch providers in the dropdown and keep going.
+
+The point is that the offline story is a first-class path, not a fallback.

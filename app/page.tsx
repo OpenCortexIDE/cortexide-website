@@ -1,34 +1,37 @@
 import LandingPage from "@/components/landingpage/LandingPage";
 import { baseUrl } from "./sitemap";
 
-const title = 'CortexIDE'
+const fullTitle = 'CortexIDE – Open Source AI Code Editor'
 const shortTitle = 'CortexIDE'
-const description = 'CortexIDE is an open source Cursor alternative. Full privacy. Fully-featured.'
-const ogImage = `${baseUrl}/og?title=${encodeURIComponent(shortTitle)}&description=${encodeURIComponent(description)}`
+const description = 'CortexIDE is an open source AI code editor. Run agents fully offline with local models, keep your code on your machine, and switch providers without lock-in.'
+const ogImage = `${baseUrl}/og?title=${encodeURIComponent(shortTitle)}&description=${encodeURIComponent('Open source AI code editor')}`
 
 
-// returns params
+// `title.absolute` opts out of the root template so the homepage stays clean.
 export const metadata = {
-  title,
+  title: { absolute: fullTitle },
   description,
   alternates: {
     canonical: `${baseUrl}`,
   },
   openGraph: {
     siteName: 'CortexIDE',
-    title: shortTitle,
+    title: fullTitle,
     description,
     type: 'website',
     url: `${baseUrl}`,
     images: [
       {
         url: ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'CortexIDE - Open Source AI Code Editor',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: shortTitle,
+    title: fullTitle,
     description,
     images: [ogImage],
   },
@@ -51,9 +54,17 @@ export default function Home() {
             name: shortTitle,
             description: description,
             applicationCategory: 'DeveloperApplication',
-            operatingSystem: 'Any',
+            operatingSystem: 'Windows, macOS, Linux',
             url: baseUrl,
             image: ogImage,
+            offers: {
+              '@type': 'Offer',
+              price: '0',
+              priceCurrency: 'USD',
+            },
+            softwareLicense: 'Apache-2.0',
+            isAccessibleForFree: true,
+            downloadUrl: `${baseUrl}/download-beta`,
             author: {
               '@type': 'Organization',
               name: 'CortexIDE',

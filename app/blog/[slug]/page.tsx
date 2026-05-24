@@ -68,33 +68,56 @@ export default function BlogPost({ params }) {
 
     const ogImageUrl = ogImageUrlOfPost(post)
 
+    const blogPostingJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: post.metadata.title,
+        description: post.metadata.description,
+        datePublished: post.metadata.publishedAt,
+        dateModified: post.metadata.modifiedAt ?? post.metadata.publishedAt,
+        image: ogImageUrl,
+        url: `${baseUrl}/blog/${post.slug}`,
+        mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `${baseUrl}/blog/${post.slug}`,
+        },
+        author: {
+            '@type': 'Organization',
+            name: 'CortexIDE Team',
+            url: baseUrl,
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: 'CortexIDE',
+            url: baseUrl,
+            logo: {
+                '@type': 'ImageObject',
+                url: `${baseUrl}/cortexide-main.png`,
+            },
+        },
+    }
+
+    const breadcrumbJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: baseUrl },
+            { '@type': 'ListItem', position: 2, name: 'Blog', item: `${baseUrl}/blog` },
+            { '@type': 'ListItem', position: 3, name: post.metadata.title, item: `${baseUrl}/blog/${post.slug}` },
+        ],
+    }
+
     return (
-        <section className='mx-auto px-4 sm:px-6 lg:px-8 py-20 max-w-3xl w-full min-h-screen'>
+        <main className='mx-auto px-4 sm:px-6 lg:px-8 py-20 max-w-3xl w-full min-h-screen'>
             <script
                 type="application/ld+json"
                 suppressHydrationWarning
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify({
-                        '@context': 'https://schema.org',
-                        '@type': 'BlogPosting',
-                        headline: post.metadata.title,
-                        description: post.metadata.description,
-                        datePublished: post.metadata.publishedAt,
-                        dateModified: post.metadata.modifiedAt,
-                        image: ogImageUrl,
-                        url: `${baseUrl}/blog/${post.slug}`,
-                        author: {
-                            '@type': 'Organization',
-                            name: 'CortexIDE',
-                            url: baseUrl,
-                        },
-                        publisher: {
-                            '@type': 'Organization',
-                            name: 'CortexIDE',
-                            url: baseUrl,
-                        },
-                    }),
-                }}
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingJsonLd) }}
+            />
+            <script
+                type="application/ld+json"
+                suppressHydrationWarning
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
             />
 
             <div className="mb-8">
@@ -139,6 +162,16 @@ export default function BlogPost({ params }) {
                 <CustomMDX source={post.content} />
             </article>
 
-        </section>
+            <nav aria-label='Post navigation' className='mt-12 pt-6 border-t border-gray-800 text-sm text-gray-400'>
+                <Link href='/blog' className='hover:text-white transition-colors'>
+                    ← All posts
+                </Link>
+                <span className='mx-3 text-gray-700'>·</span>
+                <Link href='/download-beta' className='hover:text-white transition-colors'>
+                    Download CortexIDE
+                </Link>
+            </nav>
+
+        </main>
     )
 }

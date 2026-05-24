@@ -1,0 +1,56 @@
+---
+title: "How CortexIDE's agent loop avoids the three-tool early-stop trap"
+description: "An honest postmortem of an agent loop bug we shipped, why heuristic completion detection fails, and the explicit attempt_completion tool that replaced it."
+publishedAt: "2026-05-24"
+---
+
+Earlier this month we tore out a piece of code that had been quietly killing agent runs mid-task. The mechanism was simple, the symptoms were subtle, and the lesson is one worth writing down: do not infer that an agent is done from the shape of its text. Make it tell you explicitly.
+
+## The bug
+
+The previous agent loop in `chatThreadService.ts` watched the assistant's response for completion signals. After three tool calls in a single request, if the response text contained one of the words "here", "found", "result", or "answer", the loop terminated and the agent was marked as finished.
+
+The intent was reasonable. Agents do sometimes ramble. Without a stop condition you get runaway loops. But "here" appears in `"here's what I found so far, let me check one more file"` just as easily as in `"here's the final answer"`. The heuristic conflated narrative scaffolding with task completion.
+
+The symptom for users was an agent that read three files, said something like "let me check whether this function is also called elsewhere — here are the references so far," and then stopped. No error. No incomplete state. Just a half-done task presented as if it were complete.
+
+## What replaced it
+
+The fix had two parts.
+
+First, the heuristic was removed. The agent loop in `chatThreadService.ts` now terminates in exactly two cases: the assistant returns a turn with no tool call, or it calls `attempt_completion`. There is no inference based on response text. The comment in the loop reads:
+
+```
+// The agent loop terminates naturally when no tool call is present.
+// Explicit completion is signalled via attempt_completion.
+// *** REMOVED: fragile "3 tools executed = done" heuristic that was killing agents mid-task ***
+```
+
+Second, a new tool was added. `attempt_completion` lives in `toolsService.ts` and is described to the model in `prompts.ts`:
+
+> Signal that you have FULLY completed the assigned task. Call this ONLY after: (1) verifying edited files are correct with read_file, (2) confirming no new diagnostic errors with get_diagnostics, and (3) running any relevant tests/builds. Provide a clear, specific summary of what was accomplished.
+
+The tool takes two params: a `result` summary and an optional `command` the user can run to verify or demonstrate the change. When the agent calls it, the loop returns `{ completionSignaled: true }` and the run ends cleanly.
+
+`attempt_completion` is restricted to agent and plan modes through the `AGENT_ONLY_TOOLS` set. It is not available in the lightweight "gather" mode, which is intended for context collection and has no notion of completing a task.
+
+## Why explicit beats inferred
+
+Three reasons this design is more robust than the heuristic it replaced:
+
+1. **Models are good at tool calls, bad at meta-cognition in prose.** Asking the model to recognize when it should stop, in a structured tool call, has a much higher success rate than asking it to phrase its prose in a way an external regex will recognize.
+2. **The summary is useful.** Because `attempt_completion` requires the model to list every file changed and what changed, the user gets a small audit trail for free at the end of every successful run. Compare that to a heuristic stop, which silently truncated whatever the model was about to say.
+3. **The workflow is teachable.** The system prompt now tells the agent: "Completion: When the task is FULLY done and verified, call `attempt_completion` with a precise summary. Do NOT call `attempt_completion` mid-task or before verification." That instruction has a referent. The previous instruction would have had to read something like "do not say the word 'here' until you are done", which is incoherent.
+
+## The companion tools
+
+`attempt_completion` only makes sense if the model has a way to verify its work before signalling. Two other tools were added in the same change:
+
+- `get_diagnostics` — reads `IMarkerService` errors and warnings for a file or workspace-wide. The agent calls this after editing to confirm it did not introduce type errors or lint failures.
+- `grep_search` — ripgrep-backed line-level search returning `file:line:content`. Used during the verify step to confirm references still resolve.
+
+The intended loop is now: `grep_search`/`read_file` to gather, `edit_file` to change, `read_file` to verify the diff applied, `get_diagnostics` to confirm no regressions, then `attempt_completion`. The agent is free to deviate, but the prompt makes that the happy path.
+
+## The general lesson
+
+Heuristics that pattern-match against model output are a tax you pay every release. Models drift, prompts drift, and the moment your inferred-completion regex matches mid-task you have a silent correctness bug. Tool calls are an interface contract. Use them.

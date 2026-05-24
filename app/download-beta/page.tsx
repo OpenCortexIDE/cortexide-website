@@ -6,23 +6,27 @@ import DownloadBetaClient from './DownloadBetaClient';
 import { getLatestRelease } from './lib/releases';
 import { baseUrl } from '../sitemap';
 
+const downloadOgImage = `${baseUrl}/og?title=${encodeURIComponent('Download CortexIDE')}&description=${encodeURIComponent('Open source AI code editor for Windows, macOS, and Linux.')}`
+
 export const metadata = {
-  title: 'Download CortexIDE - Free AI-Powered Code Editor',
-  description: 'Download CortexIDE, the open source Cursor alternative. Available for Windows, macOS, and Linux. Full privacy, fully-featured AI code editor.',
+  title: 'Download',
+  description: 'Download CortexIDE, the open source AI code editor for Windows, macOS, and Linux. Local-first, privacy-respecting, zero subscription.',
   alternates: {
     canonical: `${baseUrl}/download-beta`,
   },
   openGraph: {
     siteName: 'CortexIDE',
-    title: 'Download CortexIDE - Free AI-Powered Code Editor',
-    description: 'Download CortexIDE, the open source Cursor alternative. Available for Windows, macOS, and Linux.',
+    title: 'Download CortexIDE',
+    description: 'Open source AI code editor for Windows, macOS, and Linux. Local-first, privacy-respecting, zero subscription.',
     type: 'website',
     url: `${baseUrl}/download-beta`,
+    images: [{ url: downloadOgImage, width: 1200, height: 630, alt: 'Download CortexIDE' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Download CortexIDE',
-    description: 'Download CortexIDE, the open source Cursor alternative. Available for Windows, macOS, and Linux.',
+    description: 'Open source AI code editor for Windows, macOS, and Linux.',
+    images: [downloadOgImage],
   },
 };
 

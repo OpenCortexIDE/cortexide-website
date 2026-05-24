@@ -1,0 +1,77 @@
+---
+title: "Audit log and checkpoint rollback for AI edits"
+description: "Two mechanisms in CortexIDE that make AI-driven edits reviewable: a JSONL audit trail of every agent action and per-step file checkpoints you can roll back to."
+publishedAt: "2026-05-24"
+---
+
+AI coding agents make changes faster than a human can read them. That is the point, but it is also the risk. Two features in CortexIDE address the gap: an append-only audit log that records every agent action, and a per-step checkpoint system that lets you roll the workspace back to any point in a chat thread.
+
+This post explains both, with file references so you can audit the implementation yourself.
+
+## The audit log
+
+`auditLogService.ts` writes a JSONL line for every agent event. It is off by default. To enable, set `cortexide.audit.enable` to `true` in your settings. By default the file lives at `${workspaceRoot}/.cortexide/audit.jsonl`; you can override the path with `cortexide.audit.path` and the rotation threshold with `cortexide.audit.rotationSizeMB` (default 10 MB).
+
+Each event has this shape:
+
+```ts
+interface AuditEvent {
+  ts: number;
+  user?: string;
+  action: 'prompt' | 'reply' | 'diff_preview' | 'apply' | 'undo' | 'rollback'
+        | 'snapshot:create' | 'snapshot:restore' | 'snapshot:discard'
+        | 'git:stash' | 'git:stash:restore';
+  files?: string[];
+  diffStats?: { linesAdded: number; linesRemoved: number; hunks: number };
+  model?: string;
+  latencyMs?: number;
+  ok: boolean;
+  meta?: Record<string, any>;
+}
+```
+
+A few details worth knowing:
+
+- **Batched writes.** Events go into a pending queue and flush through a `RunOnceScheduler` with a 100 ms debounce. Many events per second collapse into a few file writes.
+- **Rotation with optional gzip.** When the active log crosses the configured size, it is renamed with a numeric suffix and gzipped if `zlib` is available. A new empty log takes its place. Old rotated files are not auto-deleted; that is intentional. If you need them, they are there.
+- **Workspace-scoped by default.** Multi-root workspaces use the first folder. Without an open workspace the log lands in `workspaceStorageHome`.
+
+The JSONL format is the point. Every line is independently parseable. You can `tail -f .cortexide/audit.jsonl | jq` and watch the agent operate in real time, or pipe it into whatever log aggregator you already use. There is no proprietary viewer to install.
+
+## Checkpoints
+
+Checkpoints are a different kind of safety net. They snapshot file contents before any agent edit, so you can revert without leaving the chat panel.
+
+The invariant, copied from a comment at the top of `chatThreadService.ts`, is:
+
+> A checkpoint appears before every LLM message, and before every user message (before user really means directly after LLM is done).
+
+Concretely, a `checkpoint` message is interleaved into the thread's `messages` array. When the user clicks a checkpoint in the UI, `rollbackToStep()` restores the recorded file contents and rewinds the thread state to that point. The chat history above the checkpoint stays so you can read what the agent was attempting; the workspace returns to its pre-edit state.
+
+Storage is bounded. The service enforces two limits:
+
+- `MAX_CHECKPOINTS_PER_THREAD = 50`
+- `MAX_TOTAL_CHECKPOINT_SIZE_MB = 100`
+
+When the per-thread limit hits, the oldest checkpoint in that thread is evicted (LRU). When the global size budget hits, the oldest checkpoints across all threads are evicted until enough space is freed. This is implemented in `_addCheckpoint`, `_estimateCheckpointSize`, and `_evictOldestCheckpoints`. The trade-off is explicit: you get bounded disk usage, you do not get an infinite undo stack.
+
+## How they compose
+
+The audit log records what happened. Checkpoints let you change what is currently true. They are not redundant.
+
+A realistic workflow: enable audit logging before a sensitive refactor; the agent edits eight files across fifteen tool calls, producing one `apply` event per edit and one checkpoint per step; you notice in the summary that step 11 looks wrong; click the checkpoint just before step 11 to roll the workspace back to that state; ask the agent to redo it. If a test fails in CI three days later, the JSONL log tells you which run touched which file with which model.
+
+## What this is not
+
+These features do not replace version control. They will not save you from `rm -rf`. They are a tighter loop than `git stash` for agent-driven edits inside a chat thread, plus a verifiable record of what the agent did. For everything else, commit early.
+
+To turn audit logging on:
+
+```jsonc
+{
+  "cortexide.audit.enable": true,
+  "cortexide.audit.rotationSizeMB": 10
+}
+```
+
+Checkpoints are on automatically and require no configuration.

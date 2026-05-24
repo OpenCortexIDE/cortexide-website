@@ -1,0 +1,51 @@
+---
+title: "Hybrid BM25 and vector codebase search inside the editor"
+description: "How CortexIDE's repo indexer combines inverted-index BM25 scoring with optional vector embeddings to retrieve relevant code without sending your repo to a cloud service."
+publishedAt: "2026-05-24"
+---
+
+When an agent asks "where is this function called?" or "find the place that handles auth retries," CortexIDE answers from a local index. There is no remote vector database. The implementation in `repoIndexerService.ts` runs entirely in the renderer, uses BM25 over an inverted index for keyword matching, and optionally adds vector embeddings on top when an embedding provider is configured. This post is a tour of how that works and what trade-offs the design makes.
+
+## The data model
+
+Each file in the workspace gets an `IndexEntry` holding its URI, the extracted symbols, a leading snippet, optional overlapping chunks with line ranges, pre-computed token sets for the snippet/URI/symbols, import relationships, and (when available) vector embeddings for the snippet and each chunk.
+
+The snippet is the first chunk used for scoring. Chunks are overlapping windows of the file body, scored independently so retrieval can land on the right function rather than the top of the file. Tokens are pre-computed at index time, so query-time scoring is a hash lookup, not a tokenization pass.
+
+The service also maintains inverted indexes on the side: term to entry indices, symbol name to entry indices, URI to entry index, plus secondary indexes for language, path hierarchy, and symbol relationships.
+
+## The query path
+
+A call to `query("retry auth")` runs roughly this pipeline:
+
+1. **Cache check.** A 200-entry LRU keyed on `query:k` with a five-minute TTL. Identical queries return instantly.
+2. **Embedding (optional).** If `embeddingService` and `vectorStore` are both available, compute or look up the query embedding. There is a separate 50-entry embedding cache with a 10-minute TTL because embedding calls are the expensive part.
+3. **Candidate selection.** Tokenize the query, then:
+   - One token: direct lookup in `_termIndex` and `_symbolIndex`.
+   - Multiple tokens: try intersection first (entries matching all terms) for precision. If the intersection has fewer than 10 entries, top it up with the union for recall.
+4. **Scoring with timeout.** Score every candidate using `_scoreEntryFast`. Re-check the wall clock every 5 entries; if the query exceeds the timeout, return what we have so far.
+5. **Chunk-level scoring (lazy).** Only score chunks for entries whose main snippet scored at least 2. Cap at 3 chunks per file. This avoids burning CPU on chunks from files that already look irrelevant.
+6. **BM25 rerank.** The top candidates are reranked with a BM25 pass using pre-computed document-frequency stats.
+7. **Vector fusion (optional).** If we got vector results in step 2, fuse them with the BM25 ranking.
+
+The result is `{ results: string[]; metrics: QueryMetrics }` where the metrics include retrieval latency, tokens injected, top score, whether the query timed out or terminated early, embedding latency, and whether hybrid search was used. Those metrics drive the in-editor performance telemetry, so regressions show up in the next session.
+
+## Why hybrid
+
+Pure BM25 is excellent for exact-term queries: function names, error strings, file paths. It is bad at synonymy. "Where do we cache auth tokens" will miss a file that calls it `sessionStorage` instead of `auth`.
+
+Pure vector search has the opposite problem. It generalizes well but loses identifier precision. Searching for `parseRequest` may surface five different request-parsing utilities ranked by semantic similarity, none of them the one you actually wrote.
+
+Combining them keeps the precision of BM25 for cases where it works and falls back on embeddings for the cases where it does not. The indexer treats the vector store as optional; if no embedding provider is configured, BM25 alone runs and the `hybridSearchUsed` metric records `false`. The agent still gets useful results.
+
+## Privacy posture
+
+The repo indexer imports `OfflinePrivacyGate`. Vector embeddings are only computed when a configured embedding provider exists, and that provider can be a local one (Ollama exposes embedding-capable models). In offline or privacy mode, the gate prevents remote embedding calls; the indexer falls back to BM25-only. Nothing about the index requires a network round trip.
+
+The on-disk index lives in workspace storage. Files matching workspace ignore rules are excluded at indexing time. If the secret detection service flags a snippet, it is excluded from the index entirely.
+
+## What the agent sees
+
+When the agent calls codebase search, it gets a small ranked list of `file:line snippet` strings, capped at `k` results. Each result is short enough to fit the prompt budget but long enough to disambiguate. Query metrics drive adaptive behavior: a query that consistently times out gets a smaller `k` next time.
+
+To inspect the index for your workspace, run **CortexIDE: Rebuild Codebase Index** from the command palette. The query metrics are logged to the developer console on every agent retrieval.

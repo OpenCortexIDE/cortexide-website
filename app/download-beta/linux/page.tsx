@@ -4,23 +4,27 @@ import { FaArrowLeft, FaGithub, FaLinux } from 'react-icons/fa';
 import { getLatestRelease, LinuxOption } from '../lib/releases';
 import { baseUrl } from '../../sitemap';
 
+const linuxOgImage = `${baseUrl}/og?title=${encodeURIComponent('CortexIDE for Linux')}&description=${encodeURIComponent('tar.gz, .deb, and AppImage builds.')}`
+
 export const metadata = {
-  title: 'Download CortexIDE for Linux - AI Code Editor',
-  description: 'Download CortexIDE for Linux. Available as tar.gz, .deb, and AppImage. Choose the build that matches your architecture and package manager.',
+  title: 'Download for Linux',
+  description: 'Download CortexIDE for Linux. tar.gz, .deb, and AppImage builds for x64 and arm64, straight from the latest GitHub release.',
   alternates: {
     canonical: `${baseUrl}/download-beta/linux`,
   },
   openGraph: {
     siteName: 'CortexIDE',
     title: 'Download CortexIDE for Linux',
-    description: 'Download CortexIDE for Linux. Available as tar.gz, .deb, and AppImage.',
+    description: 'tar.gz, .deb, and AppImage builds for x64 and arm64.',
     type: 'website',
     url: `${baseUrl}/download-beta/linux`,
+    images: [{ url: linuxOgImage, width: 1200, height: 630, alt: 'Download CortexIDE for Linux' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Download CortexIDE for Linux',
-    description: 'Download CortexIDE for Linux. Available as tar.gz, .deb, and AppImage.',
+    description: 'tar.gz, .deb, and AppImage builds for x64 and arm64.',
+    images: [linuxOgImage],
   },
 };
 

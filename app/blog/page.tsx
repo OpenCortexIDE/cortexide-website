@@ -2,23 +2,25 @@ import Link from "next/link"
 import { readPublicBlogPosts, formatDate } from "./utils"
 import { baseUrl } from "../sitemap"
 
+const blogDescription = 'Engineering notes, release walkthroughs, and design rationale from the team building CortexIDE.'
+
 export const metadata = {
   title: 'Blog',
-  description: `CortexIDE's official blog page.`,
+  description: blogDescription,
   alternates: {
     canonical: `${baseUrl}/blog`,
   },
   openGraph: {
     siteName: 'CortexIDE',
     title: 'CortexIDE Blog',
-    description: `CortexIDE's official blog page.`,
+    description: blogDescription,
     type: 'website',
     url: `${baseUrl}/blog`,
   },
   twitter: {
     card: 'summary_large_image',
     title: 'CortexIDE Blog',
-    description: `CortexIDE's official blog page.`,
+    description: blogDescription,
   },
 }
 
@@ -34,15 +36,41 @@ export default function Page() {
   // - "Load more" button for infinite scroll alternative
   // - Ensure pagination works with SSG/ISR caching strategy
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    name: 'CortexIDE Blog',
+    description: blogDescription,
+    url: `${baseUrl}/blog`,
+    publisher: {
+      '@type': 'Organization',
+      name: 'CortexIDE',
+      url: baseUrl,
+      logo: `${baseUrl}/cortexide-main.png`,
+    },
+    blogPost: allBlogs.filter(p => !p.isDevOnly).map(p => ({
+      '@type': 'BlogPosting',
+      headline: p.metadata.title,
+      description: p.metadata.description,
+      datePublished: p.metadata.publishedAt,
+      url: `${baseUrl}/blog/${p.slug}`,
+    })),
+  }
+
   return (
     <main className="min-h-screen">
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <section className='mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20 max-w-4xl w-full'>
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4 text-white">
             CortexIDE Blog
           </h1>
           <p className="text-gray-400 text-lg">
-            Updates, guides, and insights about CortexIDE and AI-powered development.
+            Engineering notes, release walkthroughs, and design rationale from the team building CortexIDE.
           </p>
         </div>
 

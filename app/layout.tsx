@@ -15,10 +15,24 @@ import { CSPostHogProvider } from '../components/providers'
 import { Metadata } from 'next';
 import { baseUrl } from './sitemap';
 
-// Default metadata if a page doesn't specify its own
+// Default metadata if a page doesn't specify its own.
+// `metadataBase` ensures relative URLs (e.g. canonical, og:url, og:image) resolve correctly.
+// `title.template` gives every page a consistent "<Page> – CortexIDE" suffix while keeping
+// the literal `title.default` on the root URL.
+const defaultOgImage = `${baseUrl}/og?title=${encodeURIComponent('CortexIDE')}&description=${encodeURIComponent('Open source AI code editor. Full privacy. Local-first.')}`;
+
 export const metadata: Metadata = {
-    title: "CortexIDE - Open Source AI Code Editor",
-    description: "CortexIDE is an open source Cursor alternative. Full privacy. Fully-featured. Write code with the best AI tools, use any model, and retain full control over your data.",
+    metadataBase: baseUrl ? new URL(baseUrl) : undefined,
+    title: {
+        default: "CortexIDE - Open Source AI Code Editor",
+        template: "%s | CortexIDE",
+    },
+    description: "CortexIDE is an open source AI code editor. Run agents fully offline with local models, keep your code on your machine, and switch providers without lock-in.",
+    applicationName: 'CortexIDE',
+    keywords: ['AI code editor', 'open source IDE', 'local LLM', 'Ollama', 'coding agent', 'privacy-first IDE'],
+    authors: [{ name: 'CortexIDE Team' }],
+    creator: 'CortexIDE',
+    publisher: 'CortexIDE',
     icons: {
         icon: '/icon.png',
         apple: '/icon.png',
@@ -27,18 +41,33 @@ export const metadata: Metadata = {
         siteName: 'CortexIDE',
         type: 'website',
         locale: 'en_US',
+        url: baseUrl || undefined,
         images: [
             {
-                url: `${baseUrl}/og?title=${encodeURIComponent('CortexIDE')}&description=${encodeURIComponent('CortexIDE is an open source Cursor alternative. Full privacy. Fully-featured.')}`,
+                url: defaultOgImage,
                 width: 1200,
                 height: 630,
-                alt: 'CortexIDE Logo',
+                alt: 'CortexIDE - Open Source AI Code Editor',
             },
         ],
     },
     twitter: {
         card: 'summary_large_image',
-        images: [`${baseUrl}/og?title=${encodeURIComponent('CortexIDE')}&description=${encodeURIComponent('CortexIDE is an open source Cursor alternative. Full privacy. Fully-featured.')}`],
+        creator: '@cortexide',
+        images: [defaultOgImage],
+    },
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+            index: true,
+            follow: true,
+            'max-image-preview': 'large',
+            'max-snippet': -1,
+        },
+    },
+    formatDetection: {
+        telephone: false,
     },
 };
 
@@ -48,13 +77,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
     return (<>
 
-        <html lang="en">
+        <html lang="en" dir="ltr">
             <head>
                 <meta
                     name="viewport"
                     content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
                 />
-
+                <meta name="theme-color" content="#000000" />
             </head>
 
             <CSPostHogProvider>

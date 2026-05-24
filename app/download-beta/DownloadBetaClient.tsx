@@ -100,9 +100,9 @@ export default function DownloadBetaClient({ releaseVersion, links }: { releaseV
             <section className='h-fit py-16 mt-4 sm:mt-32 flex flex-col md:flex-row items-center justify-center gap-x-8 rounded-xl text-black shadow-xl bg-gray-100'>
                 {/* left */}
                 <div className='text-balance max-sm:text-base text-xl max-w-[600px] space-y-5'>
-                    <h2 className='mx-auto text-center text-3xl lg:text-4xl tracking-tight font-black'>
-                        <div className='flex justify-center items-center '>Download CortexIDE.</div>
-                    </h2>
+                    <h1 className='mx-auto text-center text-3xl lg:text-4xl tracking-tight font-black'>
+                        <span className='flex justify-center items-center '>Download CortexIDE</span>
+                    </h1>
 
                     <div className='mx-auto pb-4 text-center px-4 text-balance max-w-[400px]'>
                         Try the beta edition of CortexIDE, or check out the source on {' '}

@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import Link from "next/link"
 import { FaDiscord } from "react-icons/fa"
 import VoidAnimatedText from "./VoidAnimatedText"
@@ -9,19 +8,19 @@ import { baseUrl } from "@/app/sitemap"
 
 export const Header = () => {
 
-    return <div className='top-0 left-0 right-0 z-10 py-6 mx-auto'>
+    return <header className='top-0 left-0 right-0 z-10 py-6 mx-auto'>
         <div className='relative max-w-[1400px] mx-auto px-4 lg:px-12 '>
 
             {/* header */}
-            <div className='h-12 py-2 px-4 max-w-[1400px] mx-auto flex items-center justify-start bg-gray-900 backdrop-blur-md shadow-md rounded-lg overflow-hidden gap-3 border border-gray-800'>
+            <nav aria-label='Primary' className='h-12 py-2 px-4 max-w-[1400px] mx-auto flex items-center justify-start bg-gray-900 backdrop-blur-md shadow-md rounded-lg overflow-hidden gap-3 border border-gray-800'>
 
-                <Link draggable={false} href='/' className='group pr-2'>
-                    <h2 className="flex items-center gap-2 font-extrabold">
-                        <img className='group-hover:brightness-[2] duration-200 bg-transparent rounded-full' src='/cortexide-main.png' alt='CortexIDE Logo' height={32} width={32} />
-                        <div className="text-transparent tracking-tighter bg-clip-text bg-gradient-to-tl from-white to-gray-400 text-3xl whitespace-nowrap group-hover:brightness-150 duration-200">
+                <Link draggable={false} href='/' className='group pr-2' aria-label='CortexIDE home'>
+                    <div className="flex items-center gap-2 font-extrabold">
+                        <Image className='group-hover:brightness-[2] duration-200 bg-transparent rounded-full' src='/cortexide-main.png' alt='CortexIDE logo' height={32} width={32} priority />
+                        <span className="text-transparent tracking-tighter bg-clip-text bg-gradient-to-tl from-white to-gray-400 text-3xl whitespace-nowrap group-hover:brightness-150 duration-200">
                             CortexIDE
-                        </div>
-                    </h2>
+                        </span>
+                    </div>
                 </Link>
 
 
@@ -75,9 +74,9 @@ export const Header = () => {
                         </span>
                     </div>
                 </a>
-            </div>
+            </nav>
 
         </div>
-    </div>
+    </header>
 }
 
