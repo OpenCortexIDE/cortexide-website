@@ -6,6 +6,7 @@ import { FaApple, FaWindows, FaLinux } from 'react-icons/fa';
 import './twinkle.css'
 import Image from 'next/image';
 import SparkleOverlay from './SparkleOverlay';
+import MacInstallInstructions from './MacInstallInstructions';
 import posthog from 'posthog-js';
 import type { DownloadLinks } from './lib/releases';
 
@@ -200,6 +201,11 @@ export default function DownloadBetaClient({ releaseVersion, links }: { releaseV
                     <FloatingElement />
                 </div>
             </section>
+
+            {/* macOS install instructions — only shown when a macOS download is offered */}
+            {(downloadLinks.mac.appleSilicon || downloadLinks.mac.intel) && (
+                <MacInstallInstructions />
+            )}
 
             {/* desc */}
             <div className='mx-auto text-center px-4 text-balance pt-60 pb-40 text-white'>
