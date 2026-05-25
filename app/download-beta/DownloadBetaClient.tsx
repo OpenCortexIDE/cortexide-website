@@ -72,8 +72,9 @@ const DownloadButton = ({ url, children, className, platform, arch }: {
 };
 
 // Actual page content (Client Component with data hydration)
+// Verified asset URL from latest release that ships a Linux AppImage.
 const FALLBACK_LINUX_APPIMAGE_URL =
-    'https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/1.99.30001/CortexIDE-1.99.30001.glibc2.29-x86_64.AppImage';
+    'https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/1.106.00910/CortexIDE-1.106.00910.glibc2.30-x86_64.AppImage';
 
 export default function DownloadBetaClient({ releaseVersion, links }: { releaseVersion: string, links?: DownloadLinks }) {
     // Use provided links or create empty structure (no fallback URLs to non-existent files)
@@ -89,7 +90,7 @@ export default function DownloadBetaClient({ releaseVersion, links }: { releaseV
         linux: [
             {
                 id: 'linux-appimage-fallback',
-                label: 'Linux AppImage (Legacy 1.99.30001)',
+                label: 'Linux AppImage (1.106.00910)',
                 url: FALLBACK_LINUX_APPIMAGE_URL,
             },
         ],
