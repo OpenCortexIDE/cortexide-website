@@ -11,7 +11,7 @@ import { FaArrowsLeftRight } from 'react-icons/fa6';
 import { VscVscode } from 'react-icons/vsc'
 import { StarOnGithubButton, DownloadButton } from '@/app/Buttons';
 import Image from 'next/image';
-import { discordLink, emailLink } from '../links';
+import { discordLink } from '../links';
 import { Hammer, Apple } from 'lucide-react'
 
 
@@ -136,7 +136,7 @@ const Fold = () => {
                         {`Use AI autocomplete, inline edits, codebase chat, agentic features, and more, in a privacy-first AI IDE.`}
                     </div> */}
                     <div className='text-balance max-sm:text-base text-xl font-semibold tracking-tight leading-tight text-white drop-shadow-xl mb-2'>
-                        {`CortexIDE is a fork of Void - an open source Cursor alternative. Write code with the best AI tools, use any model, and retain full control over your data.`}
+                        {`CortexIDE is an open-source AI IDE forked from VS Code. Write code with the best AI tools, use any model, and retain full control over your data.`}
                     </div>
                     {/* {`Void is an open source Cursor alternative. Build your project with AI auto-complete, inline edits, and codebase chat, with full control over .`} */}
                     {/* {`We offer autocomplete, inline edits, embedded chat, agentic features, and more, without compromising privacy.`} */}
@@ -249,7 +249,7 @@ const ALotMoreFeatures = () => {
                     </div>
 
                     <div className='text-balance mx-auto text-center max-w-[80%] text-gray-300'>
-                        {`Never run out of API credits again. Host any open source model with CortexIDE: DeepSeek, Llama, Gemini, Qwen, and more.`}
+                        {`Never run out of API credits again. Host any open source model with CortexIDE: DeepSeek, Llama, Qwen, Mistral, and more.`}
                     </div>
                 </div>
 
@@ -268,7 +268,7 @@ const ALotMoreFeatures = () => {
                     </div>
 
                     <div className='text-balance mx-auto text-center text-gray-300 max-w-[80%]'>
-                        {`Directly connect to any provider. Use models like Gemini 2.5, Claude 3.7, Grok 3, o4-mini, and Qwen 3. `}
+                        {`Directly connect to any provider. Use models like Claude Opus 4.5, GPT-5.1, Gemini 3 Pro, Grok 4, and Claude Sonnet 4.5.`}
                     </div>
                 </div>
             </div>
@@ -376,7 +376,7 @@ const PoweredByVscode = () => {
 
         <div className='mx-auto text-center text-balance max-sm:text-base text-xl max-w-[600px]'>
             <div className='text-center px-4 text-balance'>
-                {`CortexIDE is a fork of Void (which is a fork of VS Code). We let you transfer over all your themes, keybinds, and settings in one click. `}
+                {`CortexIDE is a fork of VS Code. We let you transfer over all your themes, keybinds, and settings in one click. `}
             </div>
         </div>
         <div className='flex items-center gap-8'>
@@ -412,7 +412,7 @@ const InterestedInContributing = () => {
 
 
 
-const GetStartedWithVoid = () => {
+const GetStartedWithCortexIDE = () => {
     return <div className='my-40 overflow-hidden shadow-xl px-5 relative min-h-[600px] bg-gray-800 flex items-center justify-center gap-12 rounded-xl'>
 
         <div className="absolute inset-0 z-0 w-full h-full scale-[1] transform opacity-0 lg:opacity-[50%] [mask-image:linear-gradient(#ffff, transparent, 75%)] pointer-events-none select-none bg-[length:100%]" style={{ mixBlendMode: "overlay", backgroundImage: `url(${process.env.NEXT_PUBLIC_BG_NOISE_IMG!})` }} />
@@ -466,7 +466,7 @@ export default function LandingPage() {
         <div className='relative max-w-[1400px] mx-auto px-4 lg:px-12'>
             {/* Removed DataPrivacy section from here since it's now part of ALotMoreFeatures */}
             <InterestedInContributing />
-            <GetStartedWithVoid />
+            <GetStartedWithCortexIDE />
         </div>
 
     </>)

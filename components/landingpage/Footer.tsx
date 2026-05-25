@@ -35,8 +35,6 @@ export const Footer = () => {
                         <IoLogoGithub className='mt-1 size-5 group-hover:fill-gray-400 fill-gray-300' />
                     </a>
 
-                    {/* <a href={emailLink} className="text-white hover:underline">{support_email}</a> */}
-                    {/* <a href={twitterLink} className="text-white hover:underline" target="_blank" rel="noopener noreferrer">@cortexide</a> */}
 
                 </div>
 

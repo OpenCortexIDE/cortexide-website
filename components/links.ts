@@ -5,10 +5,6 @@ export const xLink = 'https://x.com/cortexide'
 export const githubLink = 'https://github.com/OpenCortexIDE/cortexide#readme'
 export const githubStarLink = 'https://github.com/OpenCortexIDE/cortexide'
 
-// Uncommented support_email and emailLink exports to fix import error in LandingPage component
-export const support_email = 'hello@cortexide.com'
-export const emailLink = `mailto:${support_email}`
-
 export const waitlistLink = '/email'
 export const downloadLink = '/download-beta'
 

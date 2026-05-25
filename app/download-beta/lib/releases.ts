@@ -1,5 +1,7 @@
+// Points at the latest published release that actually ships a Linux AppImage asset.
+// Verified via: gh release view <tag> -R OpenCortexIDE/cortexide-binaries --json assets
 const FALLBACK_LINUX_APPIMAGE_URL =
-    'https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/1.99.30001/CortexIDE-1.99.30001.glibc2.29-x86_64.AppImage';
+    'https://github.com/OpenCortexIDE/cortexide-binaries/releases/download/1.106.00910/CortexIDE-1.106.00910.glibc2.30-x86_64.AppImage';
 
 export type LinuxOption = {
     id: string;
@@ -32,9 +34,9 @@ const TTL = process.env.NODE_ENV === 'development' ? 60 * 1000 : 2 * 60 * 1000; 
 
 const FALLBACK_LINUX_OPTION: LinuxOption = {
     id: 'linux-appimage-fallback',
-    label: 'Linux AppImage (Legacy 1.99.30001)',
+    label: 'Linux AppImage (1.106.00910)',
     url: FALLBACK_LINUX_APPIMAGE_URL,
-    sourceVersion: '1.99.30001',
+    sourceVersion: '1.106.00910',
 };
 
 const LEGACY_LINUX_RELEASE = '1.99.30.0.2';
