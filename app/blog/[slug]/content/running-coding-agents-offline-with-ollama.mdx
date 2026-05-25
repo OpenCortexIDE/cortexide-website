@@ -10,13 +10,14 @@ This post covers what the wizard actually does, the five model packs it can pick
 
 ## What the local setup wizard does
 
-The wizard lives in `LocalSetupWizard.tsx` under the React onboarding entry point. It is a five-step state machine:
+The wizard lives in `LocalSetupWizard.tsx` under the React onboarding entry point. It is a six-step state machine:
 
 1. **Choice** — Local, cloud, or skip. Selecting "local" calls `localSetupService.startWizard()` and runs a system check.
 2. **System check** — Detects whether Ollama is installed and whether its HTTP daemon is reachable. If not, the wizard offers an in-process install via `IOllamaInstallerService.install()`, which dispatches to the right package manager for your OS (`brew`, `winget`, `choco`, or the official `curl` script).
-3. **Model pack selection** — Shows the five packs from `MODEL_PACKS` (in `ollamaModelPacks.ts`) and pre-selects the one the hardware detector recommends.
-4. **Download** — Streams pull progress over IPC. Every percent and status line from `ollama pull` is forwarded through the `onPullProgress` event so the UI can render a real progress bar instead of a spinner.
-5. **Verification** — Sends a tiny generation request to confirm the model loaded correctly.
+3. **Model pack selection** — Shows the five packs from `MODEL_PACKS` (in `ollamaModelPacks.ts`) and pre-selects the one the hardware detector recommends. Pull progress is streamed back over IPC: every percent and status line from `ollama pull` is forwarded through the `onPullProgress` event so the UI can render a real progress bar instead of a spinner.
+4. **Verification** — Sends a tiny generation request to confirm the model loaded correctly.
+5. **Verification results** — Surfaces the per-model pass/fail summary so you can decide whether to retry or move on.
+6. **Defaults** — Sets the selected pack as the default chat provider and writes it through `ICortexideSettingsService`, then hands control back to the editor.
 
 If any step fails, the wizard persists the error so reopening it drops you back at the right step instead of starting over.
 
