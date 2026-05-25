@@ -11,7 +11,7 @@ import { FaArrowsLeftRight } from 'react-icons/fa6';
 import { VscVscode } from 'react-icons/vsc'
 import { StarOnGithubButton, DownloadButton } from '@/app/Buttons';
 import Image from 'next/image';
-import { discordLink, emailLink } from '../links';
+import { discordLink } from '../links';
 import { Hammer, Apple } from 'lucide-react'
 
 
