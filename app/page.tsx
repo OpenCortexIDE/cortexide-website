@@ -62,7 +62,7 @@ export default function Home() {
               price: '0',
               priceCurrency: 'USD',
             },
-            softwareLicense: 'Apache-2.0',
+            softwareLicense: 'MIT',
             isAccessibleForFree: true,
             downloadUrl: `${baseUrl}/download-beta`,
             author: {
